@@ -1,0 +1,762 @@
+.nama-packages-page {
+  min-height: 100svh;
+  padding-top: 92px;
+  background: #ffffff;
+  color: #111111;
+}
+
+.nama-packages-page svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.nama-packages-intro {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: 138px 6vw 72px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+}
+
+.nama-packages-kicker {
+  margin: 0;
+  color: #c95b66;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+}
+
+.nama-packages-page h1 {
+  max-width: 1200px;
+  margin: 22px 0 0;
+  color: #111111;
+  font-family: var(--nama-serif);
+  font-size: clamp(74px, 9.2vw, 150px);
+  font-weight: 400;
+  letter-spacing: -4.8px;
+  line-height: 0.88;
+}
+
+.nama-packages-grid-section {
+  margin-top: 0;
+  padding: 112px 6vw;
+  background: #ffffff;
+}
+
+.nama-packages-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 0;
+}
+
+.nama-package-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  background: #ffffff;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.nama-package-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(201, 91, 102, 0.26);
+  box-shadow: 0 16px 38px rgba(17, 17, 17, 0.1);
+}
+
+.nama-package-card-image {
+  aspect-ratio: 1.35;
+  overflow: hidden;
+  background: #f1eee8;
+}
+
+.nama-package-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nama-package-card:hover .nama-package-card-image img {
+  transform: scale(1.08);
+}
+
+.nama-package-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px;
+}
+
+.nama-package-card-body h3 {
+  margin: 0;
+  font-family: var(--nama-serif);
+  font-size: clamp(22px, 2.2vw, 42px);
+  font-weight: 400;
+  letter-spacing: -1.2px;
+  line-height: 1.08;
+  color: #111111;
+}
+
+.nama-package-card-desc {
+  flex: 1;
+  margin: 0;
+  color: rgba(17, 17, 17, 0.62);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.nama-package-card-price {
+  margin: 8px 0 0;
+  color: #111111;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.nama-package-card-price span {
+  color: rgba(17, 17, 17, 0.48);
+  font-size: 12px;
+}
+
+.nama-packages-empty,
+.nama-packages-loading {
+  margin-top: 60px;
+  padding: 0 6vw;
+  color: rgba(17, 17, 17, 0.55);
+  font-size: 14px;
+}
+
+.nama-package-detail {
+  min-height: 100svh;
+  padding-top: 92px;
+  background: #ffffff;
+  color: #111111;
+}
+
+.nama-package-detail svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.nama-package-detail-hero {
+  display: grid;
+  gap: 8vw;
+  grid-template-columns: 0.42fr 0.58fr;
+  align-items: end;
+  min-height: calc(100svh - 92px);
+  padding: 110px 6vw 80px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+}
+
+.nama-package-detail-gallery {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f1eee8;
+}
+
+.nama-package-detail-gallery img:first-child {
+  grid-column: 1 / -1;
+  aspect-ratio: 1.6;
+  object-fit: cover;
+  width: 100%;
+}
+
+.nama-package-detail-gallery img {
+  aspect-ratio: 1.25;
+  object-fit: cover;
+  width: 100%;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nama-package-detail-gallery img:hover {
+  transform: scale(1.08);
+}
+
+.nama-package-detail-info > p:first-child {
+  margin: 0;
+  color: #c95b66;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+}
+
+.nama-package-detail-info h1 {
+  margin: 22px 0 0;
+  font-family: var(--nama-serif);
+  font-size: clamp(54px, 5.8vw, 108px);
+  font-weight: 400;
+  letter-spacing: -3.2px;
+  line-height: 0.88;
+  color: #111111;
+  max-width: 700px;
+}
+
+.nama-package-detail-info > p:nth-of-type(2) {
+  margin: 32px 0 0;
+  color: rgba(17, 17, 17, 0.66);
+  font-size: clamp(18px, 1.35vw, 24px);
+  line-height: 1.68;
+  max-width: 640px;
+}
+
+.nama-package-price-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 48px;
+  padding: 32px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.nama-package-price-box strong {
+  font-family: var(--nama-serif);
+  font-size: clamp(28px, 2.8vw, 48px);
+  font-weight: 400;
+  letter-spacing: -1.4px;
+  line-height: 1;
+  color: #111111;
+}
+
+.nama-package-price-box span {
+  color: rgba(17, 17, 17, 0.48);
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+/* ── Booking form ────────────────────────────────────────── */
+
+.nama-package-booking-section {
+  padding: 112px 6vw;
+  border-top: 1px solid rgba(17, 17, 17, 0.12);
+  background: #ffffff;
+}
+
+.nama-package-booking-section > p {
+  margin: 0;
+  color: #c95b66;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+}
+
+.nama-package-booking-section h2 {
+  margin: 22px 0 0;
+  font-family: var(--nama-serif);
+  font-size: clamp(54px, 5.8vw, 108px);
+  font-weight: 400;
+  letter-spacing: -3.2px;
+  line-height: 0.88;
+  color: #111111;
+  max-width: 700px;
+}
+
+.nama-booking-form {
+  max-width: 680px;
+  margin-top: 54px;
+  padding: 32px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.nama-booking-form h2 {
+  margin: 0 0 28px;
+  font-family: var(--nama-serif);
+  font-size: clamp(28px, 2.8vw, 48px);
+  font-weight: 400;
+  letter-spacing: -1.4px;
+  color: #111111;
+}
+
+.nama-booking-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 560px) {
+  .nama-booking-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nama-booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nama-booking-field label {
+  color: rgba(17, 17, 17, 0.48);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.nama-booking-field select,
+.nama-booking-field input {
+  padding: 16px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.16);
+  border-radius: 0;
+  background: transparent;
+  color: #111111;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 220ms ease;
+}
+
+.nama-booking-field select:hover,
+.nama-booking-field input:hover {
+  border-bottom-color: rgba(17, 17, 17, 0.28);
+}
+
+.nama-booking-field select:focus,
+.nama-booking-field input:focus {
+  border-bottom-color: #111111;
+}
+
+.nama-booking-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 28px 0 32px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(17, 17, 17, 0.12);
+  font-size: 16px;
+  font-weight: 600;
+  color: #111111;
+}
+
+.nama-booking-submit {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 24px;
+  border: 1px solid rgba(17, 17, 17, 0.28);
+  border-radius: 999px;
+  background: transparent;
+  color: #111111;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 280ms ease,
+    color 280ms ease,
+    border-color 280ms ease;
+}
+
+.nama-booking-submit:hover:not(:disabled) {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+.nama-booking-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.nama-booking-note {
+  margin-top: 18px;
+  color: rgba(17, 17, 17, 0.55);
+  font-size: 12px;
+  text-align: center;
+}
+
+.nama-booking-error {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(201, 91, 102, 0.08);
+  color: #c95b66;
+  font-size: 13px;
+  border: 1px solid rgba(201, 91, 102, 0.16);
+}
+
+.nama-booking-hint {
+  margin: 2px 0 0;
+  color: rgba(17, 17, 17, 0.48);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.nama-passenger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nama-passenger-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 560px) {
+  .nama-passenger-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+  }
+}
+
+.nama-passenger-nik {
+  letter-spacing: 0.5px;
+}
+
+.nama-passenger-input {
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.16);
+  border-radius: 0;
+  background: transparent;
+  color: #111111;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 220ms ease;
+}
+
+.nama-passenger-input:hover {
+  border-bottom-color: rgba(17, 17, 17, 0.28);
+}
+
+.nama-passenger-input:focus {
+  border-bottom-color: #111111;
+}
+
+/* ── Booking confirmation modal ─────────────────────────────────── */
+
+.nama-confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 17, 17, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.nama-confirm-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 32px;
+  border-radius: 16px;
+  background: #f7f2ea;
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.3);
+}
+
+.nama-confirm-modal h3 {
+  margin: 0 0 6px;
+  font-family: var(--nama-serif);
+  font-size: 24px;
+  color: #111111;
+}
+
+.nama-confirm-modal-subtitle {
+  margin: 0 0 22px;
+  color: rgba(17, 17, 17, 0.6);
+  font-size: 13px;
+}
+
+.nama-confirm-modal-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 14px;
+  margin: 0 0 26px;
+}
+
+.nama-confirm-modal-list dt {
+  color: rgba(17, 17, 17, 0.48);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.nama-confirm-modal-list dd {
+  margin: 4px 0 0;
+  color: #111111;
+  font-size: 15px;
+}
+
+.nama-confirm-modal-total {
+  font-family: var(--nama-serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: #c95b66;
+}
+
+.nama-confirm-modal-passengers {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 14px;
+  color: #111111;
+}
+
+.nama-confirm-modal-passengers li {
+  margin-bottom: 2px;
+}
+
+.nama-confirm-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.nama-confirm-modal-btn-no,
+.nama-confirm-modal-btn-yes {
+  flex: 1;
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease;
+}
+
+.nama-confirm-modal-btn-no {
+  border: 1px solid rgba(17, 17, 17, 0.24);
+  background: transparent;
+  color: #111111;
+}
+
+.nama-confirm-modal-btn-no:hover:not(:disabled) {
+  border-color: rgba(17, 17, 17, 0.5);
+}
+
+.nama-confirm-modal-btn-yes {
+  border: 1px solid #111111;
+  background: #111111;
+  color: #ffffff;
+}
+
+.nama-confirm-modal-btn-yes:hover:not(:disabled) {
+  background: #c95b66;
+  border-color: #c95b66;
+}
+
+.nama-confirm-modal-btn-no:disabled,
+.nama-confirm-modal-btn-yes:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.nama-proof-upload {
+  margin: 0 0 20px;
+  padding: 20px 22px;
+  border: 1px dashed rgba(17, 17, 17, 0.28);
+  border-radius: 14px;
+  background: rgba(17, 17, 17, 0.02);
+}
+
+.nama-proof-upload-title {
+  margin: 0 0 4px;
+  color: #111111;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.nama-proof-upload input[type="file"] {
+  display: block;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.nama-proof-upload-btn {
+  width: auto;
+  margin-top: 4px;
+  padding: 12px 26px;
+}
+
+.nama-booking-success {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(17, 17, 17, 0.04);
+  color: #111111;
+  font-size: 13px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+}
+
+.nama-booking-login-note {
+  margin-top: 56px;
+  padding: 32px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: center;
+  color: rgba(17, 17, 17, 0.62);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.nama-booking-login-note a {
+  color: #111111;
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.28);
+  transition: border-color 220ms ease;
+}
+
+.nama-booking-login-note a:hover {
+  border-bottom-color: #111111;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .nama-package-detail-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    gap: 54px;
+    padding: 90px 6vw 70px;
+  }
+}
+
+@media (max-width: 980px) {
+  .nama-packages-page,
+  .nama-package-detail {
+    padding-top: 82px;
+  }
+
+  .nama-packages-intro {
+    padding: 110px 5vw 62px;
+    border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+  }
+
+  .nama-packages-page h1 {
+    font-size: clamp(56px, 12vw, 110px);
+    letter-spacing: -3.2px;
+  }
+
+  .nama-packages-grid-section {
+    padding: 100px 5vw;
+  }
+
+  .nama-packages-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .nama-package-card-body {
+    padding: 24px;
+  }
+
+  .nama-package-detail-info h1 {
+    font-size: clamp(42px, 4.8vw, 80px);
+    letter-spacing: -2.4px;
+  }
+
+  .nama-package-booking-section {
+    padding: 100px 5vw;
+  }
+
+  .nama-booking-form {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .nama-packages-page,
+  .nama-package-detail {
+    padding-top: 80px;
+  }
+
+  .nama-packages-intro {
+    padding: 100px 5vw 52px;
+  }
+
+  .nama-packages-page h1 {
+    font-size: clamp(48px, 14vw, 80px);
+    letter-spacing: -2.4px;
+  }
+
+  .nama-packages-grid-section {
+    padding: 80px 5vw;
+  }
+
+  .nama-packages-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .nama-package-card-body {
+    padding: 20px;
+  }
+
+  .nama-package-detail-hero {
+    padding: 90px 5vw 60px;
+    gap: 42px;
+  }
+
+  .nama-package-detail-gallery {
+    gap: 10px;
+  }
+
+  .nama-package-detail-info h1 {
+    font-size: clamp(38px, 10vw, 64px);
+    letter-spacing: -1.8px;
+  }
+
+  .nama-package-booking-section {
+    padding: 90px 5vw 110px;
+  }
+
+  .nama-package-booking-section h2 {
+    font-size: clamp(36px, 8vw, 56px);
+    letter-spacing: -1.8px;
+  }
+
+  .nama-booking-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .nama-booking-field select,
+  .nama-booking-field input {
+    padding: 14px 0;
+    font-size: 16px;
+  }
+}

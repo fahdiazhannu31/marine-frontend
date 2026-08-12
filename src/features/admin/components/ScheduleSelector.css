@@ -1,0 +1,118 @@
+.schedule-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(66, 165, 245, 0.04), rgba(100, 181, 246, 0.04));
+}
+
+.selector-label {
+  margin: 0;
+  color: #111111;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.selector-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.selector-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 16px;
+  border: 2px solid rgba(17, 17, 17, 0.16);
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    all 220ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.selector-btn:hover {
+  border-color: rgba(17, 17, 17, 0.28);
+  background: rgba(17, 17, 17, 0.02);
+  transform: translateY(-2px);
+}
+
+.selector-btn.active {
+  border-color: #1e88e5;
+  background: rgba(66, 165, 245, 0.08);
+  box-shadow: 0 4px 12px rgba(66, 165, 245, 0.16);
+}
+
+.btn-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.btn-text {
+  color: #111111;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.selector-btn.active .btn-text {
+  color: #1e88e5;
+}
+
+.btn-desc {
+  color: rgba(17, 17, 17, 0.55);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.selector-hint {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(66, 165, 245, 0.06);
+  color: rgba(30, 136, 229, 0.78);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .schedule-selector {
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .selector-buttons {
+    gap: 10px;
+  }
+
+  .selector-btn {
+    padding: 16px 12px;
+    gap: 6px;
+  }
+
+  .btn-icon {
+    font-size: 20px;
+  }
+
+  .btn-text {
+    font-size: 12px;
+  }
+
+  .btn-desc {
+    font-size: 10px;
+  }
+}

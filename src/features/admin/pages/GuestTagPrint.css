@@ -1,0 +1,194 @@
+/* ═══════════════════════════════════════════════════════════
+   Guest Tag Print — screen styles + print override
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Modal overlay (screen only) ─────────────────────────── */
+.guest-tag-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(20, 22, 26, 0.6);
+}
+
+.guest-tag-modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--adm-surface);
+  border-radius: var(--adm-radius-lg);
+  box-shadow: var(--adm-shadow-lg);
+  overflow: hidden;
+}
+
+.guest-tag-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--adm-border);
+  background: var(--adm-bg);
+}
+
+.guest-tag-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--adm-text-muted);
+}
+
+.guest-tag-hint {
+  padding: 12px 18px;
+  font-size: 12px;
+  color: var(--adm-text-muted);
+  border-top: 1px solid var(--adm-border);
+  margin: 0;
+  background: var(--adm-bg);
+}
+
+/* ── The tag itself ───────────────────────────────────────── */
+.guest-tag-card {
+  padding: 24px 24px 20px;
+  font-family: "Inter", -apple-system, Helvetica, Arial, sans-serif;
+}
+
+.guest-tag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.guest-tag-logo {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #1a3a6e;
+}
+
+.guest-tag-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #1a3a6e;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.guest-tag-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0d1117;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.guest-tag-subname {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 0;
+}
+
+.guest-tag-divider {
+  height: 1px;
+  background: #dde0e6;
+  margin: 16px 0;
+}
+
+.guest-tag-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guest-tag-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.guest-tag-row-label {
+  color: #888;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.guest-tag-row-value {
+  color: #0d1117;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+.guest-tag-footer {
+  text-align: center;
+}
+
+.guest-tag-barcode {
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: #0d1117;
+  margin-bottom: 4px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.guest-tag-code {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #555;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT STYLES
+   When window.print() fires we hide everything on the page
+   except .guest-tag-card.
+   ═══════════════════════════════════════════════════════════ */
+@media print {
+  /* Hide entire app shell */
+  body > *:not(.guest-tag-print-root) {
+    display: none !important;
+  }
+
+  /* Hide the modal chrome, show only the tag */
+  .guest-tag-backdrop {
+    position: static;
+    background: none;
+    padding: 0;
+    display: block;
+  }
+
+  .guest-tag-modal {
+    box-shadow: none;
+    border-radius: 0;
+    max-width: 100%;
+  }
+
+  .guest-tag-controls,
+  .guest-tag-hint {
+    display: none !important;
+  }
+
+  .guest-tag-card {
+    padding: 16mm;
+    border: 2px solid #0d1117;
+    border-radius: 4mm;
+    width: 90mm;
+    margin: 0 auto;
+    page-break-inside: avoid;
+  }
+
+  .guest-tag-name { font-size: 20pt; }
+  .guest-tag-subname { font-size: 11pt; }
+  .guest-tag-row { font-size: 10pt; }
+  .guest-tag-barcode { font-size: 18pt; }
+}

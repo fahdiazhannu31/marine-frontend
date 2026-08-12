@@ -1,0 +1,90 @@
+.nama-auth-slot {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.nama-auth-slot a {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--nama-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.nama-auth-slot a::after {
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--nama-text);
+  content: "";
+  transition: width 220ms ease;
+}
+
+.nama-auth-slot a:hover::after {
+  width: 100%;
+}
+
+.nama-auth-slot-user {
+  position: relative;
+}
+
+.nama-auth-user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.nama-auth-user-trigger svg {
+  font-size: 24px;
+}
+
+.nama-auth-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 170px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.nama-auth-dropdown a,
+.nama-auth-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #222;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nama-auth-dropdown a:hover,
+.nama-auth-dropdown button:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-divider {
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px solid rgba(17, 17, 17, 0.12);
+  height: 0;
+}

@@ -1,0 +1,646 @@
+.yacht-seat-map {
+  padding: 32px 28px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Legend
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.seat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(17, 17, 17, 0.7);
+}
+
+.legend-icon {
+  display: inline-block;
+  width: 22px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* Keep .legend-color for backward compat */
+.legend-color {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(17, 17, 17, 0.15);
+}
+
+/* Legend colors */
+.seat-available {
+  background: #a8d5ba;
+  border-color: #7ec997;
+}
+
+.seat-selected {
+  background: #fdd835;
+  border-color: #f9a825;
+}
+
+.seat-booked-current {
+  background: #64b5f6;
+  border-color: #1e88e5;
+}
+
+.seat-booked-other {
+  background: #ef5350;
+  border-color: #c62828;
+}
+
+.seat-occupied {
+  background: #ef9a9a;
+  border-color: #e57373;
+}
+
+.seat-highlighted {
+  background: #ba68c8;
+  border-color: #8e24aa;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
+.seat-blocked {
+  background: #bdbdbd;
+  border-color: #9e9e9e;
+}
+
+.seat-placeholder {
+  background: #f5f5f5;
+  border-color: #e0e0e0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Floor Plan Container
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.floor-plan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 28px 20px;
+  border: 2px solid rgba(17, 17, 17, 0.18);
+  border-radius: 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(17, 17, 17, 0.02) 0%,
+    rgba(17, 17, 17, 0.04) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Bow (Front of yacht)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fp-bow {
+  width: 100%;
+  max-width: 320px;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Pointed bow (LABRISA, LA VELA, MOLA-MOLA) ──────────────────────────── */
+.shape-pointed .fp-bow {
+  /* Elongated pointed tip at the top */
+  clip-path: polygon(50% 0%, 96% 100%, 4% 100%);
+  border: none;
+  /* Default color — overridden per-boat below */
+  background: linear-gradient(170deg, #424242 0%, #212121 100%);
+}
+
+/* ── Rounded bow (LA LUNA and all others via .shape-rounded) ─────────────── */
+.shape-rounded .fp-bow {
+  border-radius: 160px 160px 0 0;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-bottom: none;
+  background: linear-gradient(170deg, #e0e0e0 0%, #bdbdbd 100%);
+}
+
+/* ── Per-boat bow colors ──────────────────────────────────────────────────── */
+.boat-la-luna .fp-bow {
+  background: linear-gradient(170deg, #3b1fd6 0%, #1800ad 100%);
+  border-color: rgba(24, 0, 173, 0.4);
+}
+
+.boat-la-vela .fp-bow {
+  background: linear-gradient(170deg, #e53030 0%, #bf0000 100%);
+  border-color: rgba(191, 0, 0, 0.4);
+}
+
+.boat-la-brisa .fp-bow {
+  background: linear-gradient(170deg, #ff7fe8 0%, #ff57d0 100%);
+  border-color: rgba(255, 87, 208, 0.4);
+}
+
+.boat-mola-mola .fp-bow {
+  background: linear-gradient(170deg, #ffac70 0%, #ff914d 100%);
+  border-color: rgba(255, 145, 77, 0.4);
+}
+
+.boat-la-casa .fp-bow {
+  background: linear-gradient(170deg, #c09fff 0%, #a77aff 100%);
+  border-color: rgba(167, 122, 255, 0.4);
+}
+
+.boat-alma .fp-bow {
+  background: linear-gradient(170deg, #ffe680 0%, #ffde59 100%);
+  border-color: rgba(255, 222, 89, 0.4);
+}
+
+/* ── NAMA MARINE logo shown on all bows ──────────────────────────────────── */
+.fp-bow-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  /* Push logo down from the tip on pointed bows */
+  margin-top: 36px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.shape-pointed .fp-bow-logo {
+  margin-top: 38px;
+}
+
+.shape-rounded .fp-bow-logo {
+  margin-top: 0;
+}
+
+.fp-bow-brand-nama {
+  font-family: var(--nama-serif, Georgia, serif);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  /* Default white text, dark for alma (light bg) */
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.fp-bow-brand-marine {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Alma has a light (yellow) bow — use dark text */
+.boat-alma .fp-bow-brand-nama {
+  color: #1a1a1a;
+  text-shadow: none;
+}
+
+.boat-alma .fp-bow-brand-marine {
+  color: rgba(0, 0, 0, 0.5);
+  text-shadow: none;
+}
+
+/* Dot divider between NAMA and MARINE */
+.fp-bow-brand-dot {
+  display: block;
+  width: 28px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  margin: 1px 0;
+}
+
+.boat-alma .fp-bow-brand-dot {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Captain Area
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Captain row sekarang pakai grid yang sama dengan seat rows */
+.fp-captain-row-wrap {
+  margin-bottom: 4px;
+}
+
+.fp-captain-cell {
+  justify-content: flex-start; /* align kiri dalam sisi kanan = dekat aisle */
+}
+
+.fp-aisle-captain {
+  background: transparent;
+  border: none;
+}
+
+.fp-captain-box {
+  padding: 8px 14px;
+  background: rgba(117, 117, 117, 0.2);
+  border: 1px solid rgba(97, 97, 97, 0.3);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(17, 17, 17, 0.7);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Rows Container
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fp-rows {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.fp-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Sides (Left = Port, Right = Starboard)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fp-side {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Sisi kiri: semua item rapat ke kanan (aisle).
+   Karena slot array sudah urut [ghost...C, B, A],
+   flex-end akan push semuanya ke kanan = A tepat di sebelah aisle */
+.fp-side-left {
+  justify-content: flex-end;
+  flex: 1;
+}
+
+/* Sisi kanan: semua item rapat ke kiri (aisle).
+   Slot array urut [D, E, F, ghost...] = D tepat di sebelah aisle */
+.fp-side-right {
+  justify-content: flex-start;
+  flex: 1;
+}
+
+/* Ghost seat — disabled placeholder dengan X */
+.seat-ghost {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Aisle (center walkway)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fp-aisle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  padding: 6px 12px;
+  background: rgba(17, 17, 17, 0.04);
+  border-left: 1px dashed rgba(17, 17, 17, 0.15);
+  border-right: 1px dashed rgba(17, 17, 17, 0.15);
+  border-radius: 4px;
+}
+
+.fp-row-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(17, 17, 17, 0.5);
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Individual Seat — icon wrapper
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.seat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: default;
+  outline: none;
+  transition:
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    filter 200ms ease;
+}
+
+.seat.seat-icon-wrap {
+  width: 46px;
+  height: 52px;
+  min-width: 46px;
+}
+
+/* Clickable seats */
+.seat.clickable {
+  cursor: pointer;
+}
+
+.seat.clickable:hover {
+  transform: scale(1.12);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
+}
+
+.seat.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Placeholder (not in DB) */
+.seat.seat-placeholder {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Special Cells (Toilet, Storage, etc.)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.seat-special {
+  width: auto;
+  min-width: 80px;
+  padding: 0 14px;
+  background: rgba(189, 189, 189, 0.25);
+  border: 2px dashed rgba(97, 97, 97, 0.3);
+  color: rgba(17, 17, 17, 0.55);
+  cursor: default;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.seat-special-label {
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Stern (Back of yacht)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fp-stern {
+  width: 100%;
+  max-width: 400px;
+  height: 24px;
+  margin-top: 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(117, 117, 117, 0.3) 0%,
+    rgba(97, 97, 97, 0.2) 100%
+  );
+  border-radius: 0 0 8px 8px;
+  border: 1px solid rgba(97, 97, 97, 0.2);
+  border-top: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Generic Grid Fallback (no boat layout defined)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.floor-plan-generic {
+  padding: 20px;
+}
+
+.floor-plan-generic .fp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.floor-plan-generic .fp-row-num {
+  min-width: 40px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(17, 17, 17, 0.5);
+}
+
+.floor-plan-generic .fp-seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Selection Info
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.selection-info {
+  margin-top: 28px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: rgba(66, 165, 245, 0.1);
+  color: #1565c0;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.selection-info strong {
+  color: #1e88e5;
+  font-weight: 800;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .yacht-seat-map {
+    padding: 20px 16px;
+  }
+
+  .seat-legend {
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  .legend-item {
+    font-size: 11px;
+  }
+
+  .floor-plan {
+    padding: 20px 12px;
+  }
+
+  .fp-bow {
+    height: 68px;
+    max-width: 260px;
+  }
+
+  .fp-bow-brand-nama {
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+
+  .fp-bow-brand-marine {
+    font-size: 7px;
+    letter-spacing: 3px;
+  }
+
+  .shape-pointed .fp-bow-logo {
+    margin-top: 30px;
+  }
+
+  .fp-captain-row {
+    padding: 0 12px 10px;
+  }
+
+  .fp-rows {
+    gap: 6px;
+    padding: 0 8px;
+  }
+
+  .fp-row {
+    gap: 10px;
+  }
+
+  .fp-aisle {
+    min-width: 40px;
+    padding: 4px 8px;
+  }
+
+  .fp-row-num {
+    font-size: 11px;
+  }
+
+  .seat.seat-icon-wrap {
+    width: 40px;
+    height: 46px;
+    min-width: 40px;
+  }
+
+  .fp-side {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .yacht-seat-map {
+    padding: 16px 12px;
+  }
+
+  .seat-legend {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .legend-item {
+    font-size: 10px;
+  }
+
+  .legend-color {
+    width: 16px;
+    height: 16px;
+  }
+
+  .floor-plan {
+    padding: 16px 8px;
+  }
+
+  .fp-bow {
+    height: 55px;
+    max-width: 200px;
+  }
+
+  .fp-bow-brand-nama {
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+
+  .fp-bow-brand-marine {
+    font-size: 6.5px;
+    letter-spacing: 3px;
+  }
+
+  .shape-pointed .fp-bow-logo {
+    margin-top: 24px;
+  }
+
+  .fp-captain-box {
+    padding: 8px 12px;
+    font-size: 9px;
+  }
+
+  .fp-rows {
+    gap: 5px;
+    padding: 0 6px;
+  }
+
+  .fp-row {
+    gap: 8px;
+  }
+
+  .fp-aisle {
+    min-width: 35px;
+    padding: 4px 6px;
+  }
+
+  .fp-row-num {
+    font-size: 10px;
+  }
+
+  .seat.seat-icon-wrap {
+    width: 36px;
+    height: 42px;
+    min-width: 36px;
+  }
+
+  .fp-side {
+    gap: 5px;
+  }
+
+  .selection-info {
+    margin-top: 20px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+}

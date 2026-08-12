@@ -1,0 +1,61 @@
+/**
+ * Admin panel design tokens.
+ * Deliberately separate from the public site's brand styling (serif
+ * headings, terracotta accent everywhere) — this is a working tool used
+ * for hours at a time, so it prioritizes density, neutral color, and
+ * clear semantic meaning (success/warning/danger) over marketing flair.
+ */
+:root {
+  /* Brand accent — used sparingly (active nav item, primary buttons) */
+  --adm-accent: #2f6fed;
+  --adm-accent-hover: #2558c4;
+  --adm-accent-soft: rgba(47, 111, 237, 0.1);
+
+  /* Semantic colors */
+  --adm-success: #1a7f4b;
+  --adm-success-soft: rgba(26, 127, 75, 0.1);
+  --adm-warning: #b26a00;
+  --adm-warning-soft: rgba(178, 106, 0, 0.1);
+  --adm-danger: #c62a3a;
+  --adm-danger-soft: rgba(198, 42, 58, 0.1);
+  --adm-info: #0f6e8c;
+  --adm-info-soft: rgba(15, 110, 140, 0.1);
+
+  /* Neutrals */
+  --adm-bg: #f4f5f7;
+  --adm-surface: #ffffff;
+  --adm-border: #e2e4e9;
+  --adm-border-strong: #cbced6;
+  --adm-text: #14161a;
+  --adm-text-muted: #61656f;
+  --adm-text-faint: #9297a1;
+
+  /* Sidebar (slightly darker neutral, not pure black) */
+  --adm-sidebar-bg: #171a21;
+  --adm-sidebar-text: #c7cad3;
+  --adm-sidebar-text-active: #ffffff;
+  --adm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --adm-sidebar-active: rgba(47, 111, 237, 0.22);
+  --adm-sidebar-border: rgba(255, 255, 255, 0.08);
+
+  /* Typography */
+  --adm-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Radii + shadow */
+  --adm-radius-sm: 6px;
+  --adm-radius: 10px;
+  --adm-radius-lg: 14px;
+  --adm-shadow-sm: 0 1px 2px rgba(20, 22, 26, 0.06);
+  --adm-shadow: 0 4px 16px rgba(20, 22, 26, 0.08);
+  --adm-shadow-lg: 0 12px 32px rgba(20, 22, 26, 0.16);
+
+  /* Spacing scale */
+  --adm-space-1: 4px;
+  --adm-space-2: 8px;
+  --adm-space-3: 12px;
+  --adm-space-4: 16px;
+  --adm-space-5: 20px;
+  --adm-space-6: 24px;
+  --adm-space-8: 32px;
+}
