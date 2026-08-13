@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Route, Routes, useLocation } from "react-router";
+import { Navigate, Route, Routes, useLocation } from "react-router";
 
 import Home from "./Home.jsx";
 import Fleet from "./Fleet.jsx";
@@ -55,24 +55,14 @@ function App() {
           <ScrollReveal />
 
           <Routes location={location}>
-            <Route path="/" element={<Home />} />
-
-            <Route path="/fleet" element={<Fleet />} />
-            <Route path="/fleet/:slug" element={<BoatDetail />} />
-
-            <Route path="/destinations" element={<Destinations />} />
-            <Route path="/experiences" element={<Experiences />} />
-
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<About />} />
-
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/transactions" element={<Transactions />} />
-
-            <Route path="/packages" element={<Packages />} />
-            <Route path="/packages/:id" element={<PackageDetail />} />
+            <Route
+              path="/"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
+            <Route
+              path="/login"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
 
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-failure" element={<PaymentFailure />} />

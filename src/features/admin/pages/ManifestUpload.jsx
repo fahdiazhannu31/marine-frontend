@@ -20,6 +20,26 @@ import { useToast } from "../ui/ToastContext.jsx";
 import { useConfirm } from "../ui/ConfirmContext.jsx";
 import YachtSeatMap from "../components/YachtSeatMap.jsx";
 import { API_URL } from "../../../config/BaseUrl.js";
+import {
+  Printer,
+  Pencil,
+  Tag,
+  Check,
+  CheckCheck,
+  X,
+  AlertTriangle,
+  Moon,
+  Sun,
+  Users,
+  Ticket,
+  Store,
+  Search,
+  Wrench,
+  Eye,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 function fmtDate(v) {
   if (!v) return "-";
@@ -609,7 +629,11 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             marginRight: 4,
           }}
         >
-          🖨️ Print Boarding Pass:
+          <Printer
+            size={13}
+            style={{ verticalAlign: "middle", marginRight: 4 }}
+          />
+          Print Boarding Pass:
         </span>
         <button
           className="adm-btn adm-btn-primary adm-btn-sm"
@@ -632,7 +656,8 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             marginLeft: 4,
           }}
         >
-          — or click 🖨️ on any row
+          — or click <Printer size={11} style={{ verticalAlign: "middle" }} />{" "}
+          on any row
         </span>
       </div>
       <div
@@ -711,21 +736,38 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
               position: "relative",
             }}
           >
-            {f === "cancelled"
-              ? "❌ Cancelled"
-              : f === "overnight"
-                ? "🌙 Overnight"
-                : f === "daytrip"
-                  ? "☀️ Day Trip"
-                  : f === "staff"
-                    ? "👤 Staff"
-                    : f === "foc"
-                      ? "🎟️ FOC"
-                      : f === "vendor"
-                        ? "🏪 Vendor"
-                        : f === "unassigned"
-                          ? "⚠️ Unassigned"
-                          : "All"}
+            {f === "cancelled" ? (
+              <>
+                <X size={12} style={{ verticalAlign: "middle" }} /> Cancelled
+              </>
+            ) : f === "overnight" ? (
+              <>
+                <Moon size={12} style={{ verticalAlign: "middle" }} /> Overnight
+              </>
+            ) : f === "daytrip" ? (
+              <>
+                <Sun size={12} style={{ verticalAlign: "middle" }} /> Day Trip
+              </>
+            ) : f === "staff" ? (
+              <>
+                <Users size={12} style={{ verticalAlign: "middle" }} /> Staff
+              </>
+            ) : f === "foc" ? (
+              <>
+                <Ticket size={12} style={{ verticalAlign: "middle" }} /> FOC
+              </>
+            ) : f === "vendor" ? (
+              <>
+                <Store size={12} style={{ verticalAlign: "middle" }} /> Vendor
+              </>
+            ) : f === "unassigned" ? (
+              <>
+                <AlertTriangle size={12} style={{ verticalAlign: "middle" }} />{" "}
+                Unassigned
+              </>
+            ) : (
+              "All"
+            )}
           </button>
         ))}
         <span
@@ -857,7 +899,17 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                   <span
                     className={`adm-badge ${parseInt(t.checked_in) === 1 ? "adm-badge-success" : "adm-badge-neutral"}`}
                   >
-                    {parseInt(t.checked_in) === 1 ? "✓ Checked In" : "Pending"}
+                    {parseInt(t.checked_in) === 1 ? (
+                      <>
+                        <Check
+                          size={11}
+                          style={{ verticalAlign: "middle", marginRight: 2 }}
+                        />
+                        Checked In
+                      </>
+                    ) : (
+                      "Pending"
+                    )}
                   </span>
                 </td>
                 <td>
@@ -866,13 +918,13 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                       className="adm-btn adm-btn-secondary adm-btn-sm"
                       onClick={() => openEditModal(t)}
                     >
-                      ✏️
+                      <Pencil size={13} />
                     </button>
                     <button
                       className="adm-btn adm-btn-secondary adm-btn-sm"
                       onClick={() => printOne(t.id)}
                     >
-                      🖨️
+                      <Printer size={13} />
                     </button>
                   </div>
                 </td>
@@ -1177,7 +1229,11 @@ function BaggagePanel({ upload, tickets, baggage, onRefresh }) {
                         onClick={() => handlePrintTag(b)}
                         title="Cetak baggage tag PDF"
                       >
-                        🏷️ Tag PDF
+                        <Tag
+                          size={13}
+                          style={{ marginRight: 4, verticalAlign: "middle" }}
+                        />
+                        Tag PDF
                       </button>
                       <button
                         className="adm-btn adm-btn-secondary adm-btn-sm"
@@ -1820,7 +1876,11 @@ export default function ManifestUpload() {
                 className="adm-btn adm-btn-success"
                 onClick={handleConfirm}
               >
-                ✓ Confirm Manifest #{selectedId}
+                <CheckCheck
+                  size={15}
+                  style={{ marginRight: 6, verticalAlign: "middle" }}
+                />
+                Confirm Manifest #{selectedId}
               </button>
             )}
             {currentTickets.filter((t) => !t.seat_id && !t.cancelled).length >
@@ -1830,7 +1890,11 @@ export default function ManifestUpload() {
                 onClick={handleForceAssign}
                 style={{ marginLeft: 8 }}
               >
-                🔧 Force Assign Seats (
+                <Wrench
+                  size={15}
+                  style={{ marginRight: 6, verticalAlign: "middle" }}
+                />
+                Force Assign Seats (
                 {
                   currentTickets.filter((t) => !t.seat_id && !t.cancelled)
                     .length

@@ -4,30 +4,38 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { isUserAdmin } from "../../utils/roleUtils.js";
 import { ToastProvider } from "./ui/ToastContext.jsx";
 import { ConfirmProvider } from "./ui/ConfirmContext.jsx";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Armchair,
+  ScanLine,
+  Upload,
+  FileText,
+  FolderOpen,
+  Database,
+  LogOut,
+  Menu,
+  Anchor,
+} from "lucide-react";
 import "./ui/adminTheme.css";
 import "./ui/AdminUI.css";
 import "./AdminLayout.css";
 
 const ADMIN_NAV_ITEMS = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: "📊" },
-  { label: "Daily Ops", path: "/admin/daily-ops", icon: "✅" },
+  { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Daily Ops", path: "/admin/daily-ops", icon: ClipboardList },
   {
     label: "Yacht Seat Booking",
     path: "/admin/yacht-seat-booking",
-    icon: "🪑",
+    icon: Armchair,
   },
-  { label: "Check-in", path: "/admin/checkin", icon: "📱" },
-  { label: "Manifest Upload", path: "/admin/manifest-upload", icon: "📤" },
-  { label: "Manifest Final", path: "/admin/manifest-final", icon: "📋" },
-  { label: "Manifest", path: "/admin/manifest", icon: "🗂️" },
-  { label: "Master Data", path: "/admin/master-data", icon: "🛠️" },
+  { label: "Check-in", path: "/admin/checkin", icon: ScanLine },
+  { label: "Manifest Upload", path: "/admin/manifest-upload", icon: Upload },
+  { label: "Manifest Final", path: "/admin/manifest-final", icon: FileText },
+  { label: "Manifest", path: "/admin/manifest", icon: FolderOpen },
+  { label: "Master Data", path: "/admin/master-data", icon: Database },
 ];
 
-/**
- * Admin panel layout wrapper.
- * Checks if user is authenticated and has admin role, renders the sidebar
- * shell, and provides Toast/Confirm context to every admin page.
- */
 export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,18 +54,12 @@ export default function AdminLayout({ children }) {
     }
   }, [isAuthenticated, isLoading, user, navigate]);
 
-  // Close the mobile sidebar whenever the route changes
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  if (isLoading) {
-    return <div className="adm-shell-loading">Loading...</div>;
-  }
-
-  if (!isAuthenticated || !user) {
-    return null; // Will redirect in useEffect
-  }
+  if (isLoading) return <div className="adm-shell-loading">Loading...</div>;
+  if (!isAuthenticated || !user) return null;
 
   const handleLogout = async () => {
     await logout();
@@ -68,39 +70,50 @@ export default function AdminLayout({ children }) {
     <ToastProvider>
       <ConfirmProvider>
         <div className="adm-shell">
+          {/* Mobile toggle */}
           <button
             type="button"
             className="adm-mobile-toggle"
             onClick={() => setSidebarOpen((v) => !v)}
             aria-label="Toggle navigation"
           >
-            ☰
+            <Menu size={18} />
           </button>
 
           <aside
             className={`adm-sidebar ${sidebarOpen ? "adm-sidebar-open" : ""}`}
           >
+            {/* Brand */}
             <div className="adm-sidebar-brand">
+              <div className="adm-sidebar-brand-mark">
+                <Anchor size={15} strokeWidth={2.5} />
+              </div>
               <span className="adm-sidebar-brand-text">NAMA Marine</span>
             </div>
 
+            {/* Nav */}
             <nav className="adm-sidebar-nav">
-              {ADMIN_NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`adm-sidebar-link ${
-                    location.pathname === item.path
-                      ? "adm-sidebar-link-active"
-                      : ""
-                  }`}
-                >
-                  <span className="adm-sidebar-link-icon">{item.icon}</span>
-                  {item.label}
-                </Link>
-              ))}
+              {ADMIN_NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`adm-sidebar-link ${isActive ? "adm-sidebar-link-active" : ""}`}
+                  >
+                    <Icon
+                      size={16}
+                      strokeWidth={isActive ? 2.5 : 2}
+                      className="adm-sidebar-link-icon"
+                    />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
 
+            {/* Footer */}
             <div className="adm-sidebar-footer">
               <div className="adm-sidebar-user">
                 <div className="adm-sidebar-user-avatar">
@@ -120,6 +133,10 @@ export default function AdminLayout({ children }) {
                 className="adm-sidebar-logout"
                 onClick={handleLogout}
               >
+                <LogOut
+                  size={13}
+                  style={{ marginRight: 6, verticalAlign: "middle" }}
+                />
                 Log out
               </button>
             </div>

@@ -2,6 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "../ui/ToastContext.jsx";
 import { API_URL } from "../../../config/BaseUrl.js";
 import { api } from "../../../services/api.js";
+import {
+  Camera,
+  CameraOff,
+  Search,
+  CheckCheck,
+  X,
+  Check,
+  ScanLine,
+} from "lucide-react";
 
 // Dynamic import for html5-qrcode to avoid Vite SSR issues
 let Html5Qrcode = null;
@@ -513,7 +522,9 @@ export default function CheckIn() {
     <div className="adm-page">
       <div className="adm-page-header">
         <div>
-          <h1>📱 Check-In Scanner</h1>
+          <h1 style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ScanLine size={28} strokeWidth={1.8} /> Check-In Scanner
+          </h1>
           <p>
             Scan barcode/QR dari boarding pass atau masukkan kode manual untuk
             check-in grup penumpang.
@@ -531,7 +542,11 @@ export default function CheckIn() {
               onClick={handleStartScanner}
               style={{ width: "100%" }}
             >
-              📷 Start Camera Scanner
+              <Camera
+                size={15}
+                style={{ marginRight: 6, verticalAlign: "middle" }}
+              />
+              Start Camera Scanner
             </button>
           ) : (
             <div>
@@ -550,7 +565,11 @@ export default function CheckIn() {
                 onClick={handleStopScanner}
                 style={{ width: "100%" }}
               >
-                ⏹ Stop Scanner
+                <CameraOff
+                  size={15}
+                  style={{ marginRight: 6, verticalAlign: "middle" }}
+                />
+                Stop Scanner
               </button>
             </div>
           )}
@@ -594,7 +613,17 @@ export default function CheckIn() {
                 className="adm-btn adm-btn-primary"
                 disabled={loading || !manualCode.trim()}
               >
-                {loading ? "Searching..." : "🔍 Search"}
+                {loading ? (
+                  "Searching..."
+                ) : (
+                  <>
+                    <Search
+                      size={14}
+                      style={{ verticalAlign: "middle", marginRight: 4 }}
+                    />
+                    Search
+                  </>
+                )}
               </button>
             </div>
           </form>

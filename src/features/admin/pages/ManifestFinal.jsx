@@ -7,6 +7,7 @@ import {
 import { useToast } from "../ui/ToastContext.jsx";
 import { API_URL } from "../../../config/BaseUrl.js";
 import { getToken } from "../../../services/api.js";
+import { Printer, FileSpreadsheet } from "lucide-react";
 
 // ── Boat brand colors ────────────────────────────────────────────────────────
 const BOAT_COLORS = [
@@ -287,10 +288,18 @@ export default function ManifestFinal() {
         {data && (
           <div style={{ display: "flex", gap: 10 }}>
             <button className="adm-btn adm-btn-secondary" onClick={handlePrint}>
-              🖨️ Print
+              <Printer
+                size={14}
+                style={{ marginRight: 6, verticalAlign: "middle" }}
+              />
+              Print
             </button>
             <button className="adm-btn adm-btn-success" onClick={handleExport}>
-              ⬇️ Export Excel (.xlsx)
+              <FileSpreadsheet
+                size={14}
+                style={{ marginRight: 6, verticalAlign: "middle" }}
+              />
+              Export Excel (.xlsx)
             </button>
           </div>
         )}
