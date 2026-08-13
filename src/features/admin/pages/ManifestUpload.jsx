@@ -1809,9 +1809,10 @@ export default function ManifestUpload() {
         setSelectedId(null);
         setDetail(null);
       }
-      setUploads(
-        await fetchUploads().catch(() => uploads.filter((u) => u.id !== id)),
+      const ups = await fetchUploads().catch(() =>
+        uploads.filter((u) => u.id !== id),
       );
+      setUploads(ups);
     } catch (e) {
       toast.error(e.message || "Delete failed.");
     }
