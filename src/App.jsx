@@ -1,21 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 
-import Home from "./Home.jsx";
-import Fleet from "./Fleet.jsx";
-
-import BoatDetail from "./pages/BoatDetail.jsx";
-import Destinations from "./pages/Destinations.jsx";
-import Experiences from "./pages/Experiences.jsx";
-import About from "./pages/About.jsx";
-import Contact from "./pages/Contact.jsx";
-
 import Login from "./features/auth/Login.jsx";
-import Register from "./features/auth/Register.jsx";
-import Profile from "./features/auth/Profile.jsx";
-import Transactions from "./features/auth/Transactions.jsx";
-import Packages from "./features/packages/Packages.jsx";
-import PackageDetail from "./features/packages/PackageDetail.jsx";
 
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentFailure from "./pages/PaymentFailure.jsx";
@@ -30,9 +16,19 @@ import ManifestFinal from "./features/admin/pages/ManifestFinal.jsx";
 import DailyOps from "./features/admin/pages/DailyOps.jsx";
 import MasterData from "./features/admin/pages/MasterData.jsx";
 
-import PageCurtain from "./components/PageCurtain.jsx";
-import ScrollReveal from "./components/ScrollReveal.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
+import { isUserAdmin } from "./utils/roleUtils.js";
+
+// Smart root redirect — goes to dashboard if already logged in, else login page
+function RootRedirect() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (isAuthenticated && isUserAdmin(user)) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  return <Navigate to="/admin/login" replace />;
+}
 
 function App() {
   const location = useLocation();
@@ -40,9 +36,6 @@ function App() {
   return (
     <>
       <ScrollToTop />
-
-      <PageCurtain key={`curtain-${location.pathname}`} />
-
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           className="route-stage"
@@ -52,16 +45,17 @@ function App() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.28, ease: "easeOut" }}
         >
-          <ScrollReveal />
-
           <Routes location={location}>
-            <Route
-              path="/"
-              element={<Navigate to="/admin/dashboard" replace />}
-            />
+            {/* Root — smart redirect based on auth state */}
+            <Route path="/" element={<RootRedirect />} />
+
+            {/* Admin login page */}
+            <Route path="/admin/login" element={<Login />} />
+
+            {/* Keep /login as alias */}
             <Route
               path="/login"
-              element={<Navigate to="/admin/dashboard" replace />}
+              element={<Navigate to="/admin/login" replace />}
             />
 
             <Route path="/payment-success" element={<PaymentSuccess />} />
@@ -132,6 +126,9 @@ function App() {
                 </AdminLayout>
               }
             />
+
+            {/* Catch-all fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </motion.div>
       </AnimatePresence>

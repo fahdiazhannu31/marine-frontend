@@ -45,11 +45,11 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated || !user) {
-      navigate("/login", { replace: true });
+      navigate("/admin/login", { replace: true });
       return;
     }
     if (!isUserAdmin(user)) {
-      navigate("/", { replace: true });
+      navigate("/admin/login", { replace: true });
       return;
     }
   }, [isAuthenticated, isLoading, user, navigate]);
@@ -63,7 +63,7 @@ export default function AdminLayout({ children }) {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login", { replace: true });
+    navigate("/admin/login", { replace: true });
   };
 
   return (
