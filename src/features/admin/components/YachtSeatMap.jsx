@@ -4,10 +4,12 @@ import "./YachtSeatMap.css";
  * Yacht seat layout component with per-boat visual floor plans.
  *
  * Supported boats:
- *  - id 6  : LABRISA       (116 seats, 4+4 per row, 15 rows, row 15 right-side only)
- *  - id 8  : LA VELA/SEPA4 (49 seats,  row 1=AB+CD, rows 2-8=ABC+DEF, row 9=toilet+DEF)
- *  - id 10 : LA LUNA       (49 seats,  rows vary per image)
+ *  - id 9  : LA BRISA      (116 seats, 4+4 per row, 15 rows, row 15 right-side only)
+ *  - id 8  : LA VELA       (49 seats, row 6 = AB|EF no CD)
+ *  - id 10 : LA LUNA       (49 seats, row 6 = AB|EF, row 9 = left empty|DEF)
+ *  - id 14 : MOLA-MOLA     (2 decks, equipment labels)
  *
+ * Row numbers displayed OUTSIDE floor plan on the RIGHT side.
  * When boat_id matches a known layout the component renders that specific floor plan.
  * Otherwise it falls back to the generic grid renderer.
  */
@@ -20,9 +22,9 @@ import "./YachtSeatMap.css";
 // ---------------------------------------------------------------------------
 
 const BOAT_LAYOUTS = {
-  // ── LABRISA (id 6) ───────────────────────────────────────────────────────
-  6: {
-    name: "LABRISA",
+  // ── LA BRISA (id 9) ──────────────────────────────────────────────────────
+  9: {
+    name: "LA BRISA",
     shape: "pointed", // bow shape
     captainArea: true,
     rows: [
@@ -40,22 +42,28 @@ const BOAT_LAYOUTS = {
       { row: 12, left: ["A", "B", "C", "D"], right: ["E", "F", "G", "H"] },
       { row: 13, left: ["A", "B", "C", "D"], right: ["E", "F", "G", "H"] },
       { row: 14, left: ["A", "B", "C", "D"], right: ["E", "F", "G", "H"] },
-      { row: 15, left: [], right: ["E", "F", "G", "H"] },
+      // Row 15: right side only (left side = toilet/storage area)
+      {
+        row: 15,
+        left: [{ type: "special", label: "Storage" }],
+        right: ["E", "F", "G", "H"],
+      },
     ],
   },
 
-  // ── LA VELA / SEPA 4 (id 8) ──────────────────────────────────────────────
+  // ── LA VELA (id 8) ───────────────────────────────────────────────────────
   8: {
-    name: "LA VELA / SEPA 4",
+    name: "LA VELA",
     shape: "pointed",
-    captainArea: true, // small captain box top-right
+    captainArea: true,
     rows: [
       { row: 1, left: ["A", "B"], right: ["C", "D"] },
       { row: 2, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 3, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 4, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 5, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 6, left: ["A", "B"], right: [null, "E", "F"] }, // D kosong (ghost), E/F sejajar dengan row 5
+      // Row 6: AB left | EF right (no CD)
+      { row: 6, left: ["A", "B"], right: ["E", "F"] },
       { row: 7, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 8, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       // Row 9: toilet left side, DEF right side
@@ -71,17 +79,23 @@ const BOAT_LAYOUTS = {
   10: {
     name: "LA LUNA",
     shape: "rounded", // rounded bow
-    captainArea: true, // captain chair top-right
+    captainArea: true,
     rows: [
       { row: 1, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 2, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 3, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 4, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 5, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 6, left: ["A", "B", null], right: [null, "E", "F"] },
+      // Row 6: AB left | EF right (no CD)
+      { row: 6, left: ["A", "B"], right: ["E", "F"] },
       { row: 7, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 8, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 9, left: [], right: ["D", "E", "F"] }, // left side = storage/toilet
+      // Row 9: left empty (storage/toilet) | DEF right side only
+      {
+        row: 9,
+        left: [{ type: "special", label: "Storage" }],
+        right: ["D", "E", "F"],
+      },
     ],
   },
 
@@ -192,7 +206,7 @@ const getBowClass = (boatId, boatName) => {
   // Fallback by id
   if (boatId === 10) return "boat-la-luna";
   if (boatId === 8) return "boat-la-vela";
-  if (boatId === 6) return "boat-la-brisa";
+  if (boatId === 9) return "boat-la-brisa";
   if (boatId === 14) return "boat-mola-mola";
   return "";
 };
@@ -425,11 +439,13 @@ export default function YachtSeatMap({
     // Hitung max kolom kiri dan kanan dari semua rows
     // (abaikan special cells seperti Toilet saat hitung kolom)
     const maxLeft = Math.max(
+      1, // minimum 1 untuk avoid Math.max() dengan empty array
       ...layout.rows.map(
         ({ left }) => left.filter((c) => typeof c === "string").length,
       ),
     );
     const maxRight = Math.max(
+      1, // minimum 1 untuk avoid Math.max() dengan empty array
       ...layout.rows.map(
         ({ right }) => right.filter((c) => typeof c === "string").length,
       ),
@@ -545,12 +561,15 @@ export default function YachtSeatMap({
         {/* Captain area — positioned in same grid as seat rows */}
         {layout.captainArea && (
           <div className="fp-rows fp-captain-row-wrap">
-            <div className="fp-row">
-              <div className="fp-side fp-side-left" />
-              <div className="fp-aisle fp-aisle-captain" />
-              <div className="fp-side fp-side-right fp-captain-cell">
-                <div className="fp-row-box">Captain</div>
+            <div className="fp-row-with-number">
+              <div className="fp-row">
+                <div className="fp-side fp-side-left" />
+                <div className="fp-aisle fp-aisle-captain" />
+                <div className="fp-side fp-side-right fp-captain-cell">
+                  <div className="fp-captain-box">Captain</div>
+                </div>
               </div>
+              <div className="fp-row-num-outside" />
             </div>
           </div>
         )}
@@ -576,15 +595,16 @@ export default function YachtSeatMap({
           </div>
         )}
 
-        {/* BAWAH seat rows */}
+        {/* BAWAH seat rows — row numbers OUTSIDE on RIGHT */}
         <div className="fp-rows">
           {bawahRows.map(({ row, left, right }) => (
-            <div key={row} className="fp-row">
-              {renderLeftSide(row, left)}
-              <div className="fp-aisle">
-                <span className="fp-row-num">{row}</span>
+            <div key={row} className="fp-row-with-number">
+              <div className="fp-row">
+                {renderLeftSide(row, left)}
+                <div className="fp-aisle" />
+                {renderRightSide(row, right)}
               </div>
-              {renderRightSide(row, right)}
+              <div className="fp-row-num-outside">{row}</div>
             </div>
           ))}
         </div>
@@ -612,20 +632,23 @@ export default function YachtSeatMap({
             </div>
             <div className="fp-rows">
               {atasRows.map(({ row, left, right }) => (
-                <div key={row} className="fp-row">
-                  {renderLeftSide(row, left)}
-                  <div className="fp-aisle">
-                    <span className="fp-row-num">{row}</span>
+                <div key={row} className="fp-row-with-number">
+                  <div className="fp-row">
+                    {renderLeftSide(row, left)}
+                    <div className="fp-aisle" />
+                    {renderRightSide(row, right)}
                   </div>
-                  {renderRightSide(row, right)}
+                  <div className="fp-row-num-outside">{row}</div>
                 </div>
               ))}
             </div>
           </>
         )}
 
-        {/* Stern */}
-        <div className="fp-stern" />
+        {/* Stern with boat name */}
+        <div className="fp-stern">
+          <span className="fp-stern-label">{layout.name}</span>
+        </div>
       </div>
     );
   };

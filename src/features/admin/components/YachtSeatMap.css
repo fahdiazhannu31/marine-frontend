@@ -289,12 +289,31 @@
   padding: 0 12px;
 }
 
+/* Row wrapper with number OUTSIDE on right */
+.fp-row-with-number {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
 .fp-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 12px;
-  width: 100%;
+  flex: 1;
+}
+
+/* Row number displayed OUTSIDE floor plan on the RIGHT side */
+.fp-row-num-outside {
+  min-width: 32px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(17, 17, 17, 0.5);
+  letter-spacing: 0.5px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -345,6 +364,7 @@
   border-radius: 4px;
 }
 
+/* Legacy .fp-row-num inside aisle (not used in new layout, kept for backward compat) */
 .fp-row-num {
   font-size: 13px;
   font-weight: 700;
@@ -427,7 +447,7 @@
 .fp-stern {
   width: 100%;
   max-width: 400px;
-  height: 24px;
+  height: 32px;
   margin-top: 12px;
   background: linear-gradient(
     180deg,
@@ -437,6 +457,22 @@
   border-radius: 0 0 8px 8px;
   border: 1px solid rgba(97, 97, 97, 0.2);
   border-top: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fp-stern-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(17, 17, 17, 0.65);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  user-select: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -530,7 +566,7 @@
     margin-top: 30px;
   }
 
-  .fp-captain-row {
+  .fp-captain-row-wrap {
     padding: 0 12px 10px;
   }
 
@@ -539,8 +575,17 @@
     padding: 0 8px;
   }
 
+  .fp-row-with-number {
+    gap: 10px;
+  }
+
   .fp-row {
     gap: 10px;
+  }
+
+  .fp-row-num-outside {
+    min-width: 28px;
+    font-size: 12px;
   }
 
   .fp-aisle {
@@ -560,6 +605,15 @@
 
   .fp-side {
     gap: 6px;
+  }
+
+  .fp-stern {
+    height: 28px;
+  }
+
+  .fp-stern-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
   }
 }
 
@@ -615,8 +669,17 @@
     padding: 0 6px;
   }
 
+  .fp-row-with-number {
+    gap: 8px;
+  }
+
   .fp-row {
     gap: 8px;
+  }
+
+  .fp-row-num-outside {
+    min-width: 24px;
+    font-size: 11px;
   }
 
   .fp-aisle {
@@ -636,6 +699,15 @@
 
   .fp-side {
     gap: 5px;
+  }
+
+  .fp-stern {
+    height: 26px;
+  }
+
+  .fp-stern-label {
+    font-size: 9px;
+    letter-spacing: 1.2px;
   }
 
   .selection-info {
