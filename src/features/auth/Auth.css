@@ -1,13 +1,16 @@
 .nama-auth-page {
   min-height: 100svh;
-  padding: 130px 6vw 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 6vw;
   background: #f3efe7;
   color: #10262d;
 }
 
 .nama-auth-card {
+  width: 100%;
   max-width: 440px;
-  margin: 40px auto 0;
   padding: 44px 40px;
   border-radius: 20px;
   background: #ffffff;
@@ -17,7 +20,7 @@
 .nama-auth-title {
   margin: 0;
   color: #10262d;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 34px;
   font-weight: 400;
 }
@@ -162,4 +165,21 @@
   letter-spacing: 1.3px;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+/* ── Auth mobile ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .nama-auth-page {
+    align-items: flex-start;
+    padding: 40px 16px 40px;
+  }
+
+  .nama-auth-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+  }
+
+  .nama-auth-title {
+    font-size: 28px;
+  }
 }
