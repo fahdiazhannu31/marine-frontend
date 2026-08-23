@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useToast } from "../ui/ToastContext.jsx";
-import { API_URL } from "../../../config/BaseUrl.js";
 import { api } from "../../../services/api.js";
 import {
   Camera,
@@ -10,12 +9,23 @@ import {
   X,
   Check,
   ScanLine,
+  Users,
+  RefreshCw,
+  UserCheck,
 } from "lucide-react";
+import "./CheckIn.css";
 
-// Dynamic import for html5-qrcode to avoid Vite SSR issues
 let Html5Qrcode = null;
 
-// ── Helper functions ─────────────────────────────────────────────────────────
+function fmtTime(v) {
+  if (!v) return "-";
+  return new Date(v).toLocaleString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
 function fmtDate(v) {
   if (!v) return "-";
   return new Date(v).toLocaleString("id-ID", {
@@ -27,638 +37,546 @@ function fmtDate(v) {
   });
 }
 
-// ── GroupCheckinModal ────────────────────────────────────────────────────────
-function GroupCheckinModal({ groupData, onClose, onSuccess }) {
+function playBeep(type = "success") {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = type === "success" ? 880 : 300;
+    osc.type = "sine";
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+  } catch (_) {}
+}
+
+// ── Result Card ──────────────────────────────────────────────────────────────
+// Shows the scanned passenger prominently, group status below
+function ResultCard({
+  result,
+  scannedId,
+  onCheckinAll,
+  onDismiss,
+  processing,
+}) {
+  if (!result) return null;
+
+  const { group_name, tickets, boat_name, trip_date, direction } = result;
+  const scanned = tickets.find((t) => t.id === scannedId);
+  const total = tickets.length;
+  const checkedIn = tickets.filter((t) => parseInt(t.checked_in) === 1).length;
+  const cancelled = tickets.filter((t) => parseInt(t.cancelled) === 1).length;
+  const pending = total - checkedIn - cancelled;
+  const allDone = pending === 0;
+
+  const isIn = (t) => parseInt(t.checked_in) === 1;
+  const isCan = (t) => parseInt(t.cancelled) === 1;
+
+  return (
+    <div
+      className={`ci-result-card ${allDone ? "ci-result-done" : "ci-result-active"}`}
+    >
+      {/* ── Scanned passenger highlight ── */}
+      {scanned && (
+        <div
+          className={`ci-scanned-passenger ${isIn(scanned) ? "ci-scanned-in" : isCan(scanned) ? "ci-scanned-cancelled" : "ci-scanned-pending"}`}
+        >
+          <div className="ci-scanned-icon">
+            {isIn(scanned) ? (
+              <UserCheck size={26} />
+            ) : isCan(scanned) ? (
+              <X size={26} />
+            ) : (
+              <ScanLine size={26} />
+            )}
+          </div>
+          <div className="ci-scanned-info">
+            <div className="ci-scanned-label">
+              {isIn(scanned)
+                ? "✓ Sudah Check-In"
+                : isCan(scanned)
+                  ? "✕ Tiket Dibatalkan"
+                  : "Tiket Ditemukan"}
+            </div>
+            <div className="ci-scanned-name">{scanned.passenger_name}</div>
+            <div className="ci-scanned-meta">
+              {scanned.seat_number && (
+                <span className="ci-scanned-seat">{scanned.seat_number}</span>
+              )}
+              <span>
+                {boat_name} · {direction === "RETURN" ? "Return" : "Departure"}
+              </span>
+            </div>
+          </div>
+          <button className="ci-result-dismiss" onClick={onDismiss}>
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Group overview header ── */}
+      <div className="ci-group-header">
+        <Users size={14} />
+        <span>
+          Grup: <strong>{group_name}</strong>
+        </span>
+        <span className="ci-group-date">{fmtDate(trip_date)}</span>
+      </div>
+
+      {/* Stats */}
+      <div className="ci-result-stats">
+        <div className="ci-stat">
+          <span className="ci-stat-val">{total}</span>
+          <span className="ci-stat-lbl">Total</span>
+        </div>
+        <div className="ci-stat ci-stat-green">
+          <span className="ci-stat-val">{checkedIn}</span>
+          <span className="ci-stat-lbl">Checked In</span>
+        </div>
+        <div className="ci-stat ci-stat-orange">
+          <span className="ci-stat-val">{pending}</span>
+          <span className="ci-stat-lbl">Pending</span>
+        </div>
+        <div className="ci-stat ci-stat-red">
+          <span className="ci-stat-val">{cancelled}</span>
+          <span className="ci-stat-lbl">Cancelled</span>
+        </div>
+      </div>
+
+      {/* Ticket list — highlight scanned row */}
+      <div className="ci-result-tickets">
+        {tickets.map((t) => {
+          const scannedRow = t.id === scannedId;
+          return (
+            <div
+              key={t.id}
+              className={`ci-ticket-row
+                ${isIn(t) ? "ci-ticket-in" : isCan(t) ? "ci-ticket-cancelled" : "ci-ticket-pending"}
+                ${scannedRow ? "ci-ticket-scanned" : ""}
+              `}
+            >
+              <span className="ci-ticket-dot">
+                {isIn(t) ? (
+                  <Check size={11} />
+                ) : isCan(t) ? (
+                  <X size={11} />
+                ) : (
+                  "·"
+                )}
+              </span>
+              <span className="ci-ticket-name">
+                {t.passenger_name}
+                {scannedRow && <span className="ci-ticket-this"> ← ini</span>}
+              </span>
+              {t.seat_number && (
+                <span className="ci-ticket-seat">{t.seat_number}</span>
+              )}
+              <span className="ci-ticket-status">
+                {isIn(t) ? "In" : isCan(t) ? "Batal" : "Pending"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer actions */}
+      {allDone ? (
+        <div className="ci-all-done">
+          <CheckCheck size={15} /> Semua penumpang sudah check-in
+        </div>
+      ) : (
+        <button
+          className="ci-checkin-btn"
+          onClick={onCheckinAll}
+          disabled={processing}
+        >
+          {processing ? (
+            <>
+              <RefreshCw size={14} className="ci-spin" /> Processing…
+            </>
+          ) : (
+            <>
+              <CheckCheck size={14} /> Check-In Semua yang Pending ({pending}{" "}
+              orang)
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Main CheckIn ─────────────────────────────────────────────────────────────
+export default function CheckIn() {
   const toast = useToast();
-  const [selectedTickets, setSelectedTickets] = useState(new Set());
+
+  const [scannerActive, setScannerActive] = useState(false);
+  const [scannerReady, setScannerReady] = useState(false);
+  const [result, setResult] = useState(null);
+  const [scannedId, setScannedId] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [lastCode, setLastCode] = useState("");
+  const [scanLog, setScanLog] = useState([]);
+  const [manualCode, setManualCode] = useState("");
+  const [searching, setSearching] = useState(false);
+
+  const html5QrRef = useRef(null);
+  const dismissTimerRef = useRef(null);
+  const lastCodeRef = useRef(null);
+  const fetchAndCheckinRef = useRef(null); // always points to latest fetchAndCheckin
+  const DEBOUNCE_MS = 3000;
+
+  // ── Scanner lifecycle ────────────────────────────────────────────────────
+  const startScanner = useCallback(async () => {
+    if (html5QrRef.current) return;
+    if (!Html5Qrcode) {
+      const mod = await import("html5-qrcode");
+      Html5Qrcode = mod.Html5Qrcode;
+    }
+    try {
+      const qr = new Html5Qrcode("ci-qr-reader");
+      html5QrRef.current = qr;
+      await qr.start(
+        { facingMode: "environment" },
+        { fps: 15, qrbox: { width: 220, height: 220 } },
+        // Use ref so the callback is never stale regardless of re-renders
+        (text) => {
+          const now = Date.now();
+          if (
+            lastCodeRef.current?.code === text &&
+            now - lastCodeRef.current.ts < DEBOUNCE_MS
+          )
+            return;
+          lastCodeRef.current = { code: text, ts: now };
+          playBeep("success");
+          // Call via ref — always the latest version of fetchAndCheckin
+          fetchAndCheckinRef.current?.(text, true);
+        },
+        () => {},
+      );
+      setScannerReady(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("Kamera tidak bisa diakses. Gunakan input manual.");
+      html5QrRef.current = null;
+      setScannerActive(false);
+    }
+  }, []); // eslint-disable-line
+
+  const stopScanner = useCallback(async () => {
+    setScannerReady(false);
+    if (html5QrRef.current) {
+      try {
+        await html5QrRef.current.stop();
+        html5QrRef.current.clear();
+      } catch (_) {}
+      html5QrRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
-    // Auto-select all non-cancelled tickets
-    const autoSelect = new Set(
-      groupData.tickets
-        .filter((t) => parseInt(t.cancelled) !== 1)
-        .map((t) => t.id),
-    );
-    setSelectedTickets(autoSelect);
-  }, [groupData]);
+    if (scannerActive) startScanner();
+    else stopScanner();
+    return () => {
+      stopScanner();
+    };
+  }, [scannerActive]); // eslint-disable-line
 
-  const toggleTicket = (ticketId) => {
-    setSelectedTickets((prev) => {
-      const next = new Set(prev);
-      if (next.has(ticketId)) {
-        next.delete(ticketId);
-      } else {
-        next.add(ticketId);
-      }
-      return next;
-    });
-  };
-
-  const handleCheckinAll = async () => {
-    if (selectedTickets.size === 0) {
-      toast.error("No tickets selected for check-in.");
-      return;
-    }
-
-    setProcessing(true);
+  // ── fetchAndCheckin — always keep ref current so scanner callback never goes stale ──
+  const fetchAndCheckin = async (code, autoCheckin = true) => {
+    setSearching(true);
+    setResult(null);
+    setScannedId(null);
+    clearDismissTimer();
+    setLastCode(code);
     try {
-      const ticketIds = Array.from(selectedTickets);
-      await api.post(
-        "/api/admin/manifest/checkin-bulk",
-        { ticket_ids: ticketIds },
+      const data = await api.get(
+        `/api/admin/manifest/group-by-code/${encodeURIComponent(code)}`,
         { auth: true },
       );
-      toast.success(
-        `✓ Checked in ${ticketIds.length} passenger${ticketIds.length > 1 ? "s" : ""}`,
+
+      // Cast to number — JSON may return string or number depending on PHP version
+      const sid = data.scanned_ticket_id
+        ? Number(data.scanned_ticket_id)
+        : null;
+      setScannedId(sid);
+
+      // Auto check-in the scanned ticket if it's pending
+      if (autoCheckin && sid) {
+        // Use == (loose) as safety net for type mismatch
+        const ticket = data.tickets.find((t) => Number(t.id) === sid);
+        if (
+          ticket &&
+          parseInt(ticket.checked_in) !== 1 &&
+          parseInt(ticket.cancelled) !== 1
+        ) {
+          await api.post(
+            "/api/admin/manifest/checkin-bulk",
+            { ticket_ids: [sid] },
+            { auth: true },
+          );
+          // Update local copy
+          data.tickets = data.tickets.map((t) =>
+            Number(t.id) === sid ? { ...t, checked_in: 1 } : t,
+          );
+          setScanLog((prev) => [
+            {
+              id: Date.now(),
+              name: ticket.passenger_name,
+              group: data.group_name,
+              boat: data.boat_name,
+              seat: ticket.seat_number,
+              ts: new Date(),
+            },
+            ...prev.slice(0, 29),
+          ]);
+          toast.success(`✓ ${ticket.passenger_name} checked in`);
+        } else if (ticket && parseInt(ticket.checked_in) === 1) {
+          toast.info(`${ticket.passenger_name} sudah check-in sebelumnya`);
+        } else if (!ticket) {
+          // sid exists but ticket not found in list — fallback: just call bulk checkin
+          await api.post(
+            "/api/admin/manifest/checkin-bulk",
+            { ticket_ids: [sid] },
+            { auth: true },
+          );
+          toast.success("✓ Penumpang checked in");
+        }
+      }
+
+      setResult(data);
+
+      const pending = data.tickets.filter(
+        (t) => parseInt(t.checked_in) !== 1 && parseInt(t.cancelled) !== 1,
+      ).length;
+      dismissTimerRef.current = setTimeout(
+        () => setResult(null),
+        pending === 0 ? 5000 : 8000,
       );
-      onSuccess();
     } catch (e) {
-      toast.error(e.message || "Check-in failed");
+      playBeep("error");
+      toast.error(e.message || "Tiket tidak ditemukan.");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // Keep the ref always pointing to the latest fetchAndCheckin
+  fetchAndCheckinRef.current = fetchAndCheckin;
+
+  // ── Check-in all pending (manual button) ────────────────────────────────
+  const handleCheckinAll = async () => {
+    if (!result) return;
+    const pendingIds = result.tickets
+      .filter(
+        (t) => parseInt(t.checked_in) !== 1 && parseInt(t.cancelled) !== 1,
+      )
+      .map((t) => t.id);
+    if (!pendingIds.length) return;
+    setProcessing(true);
+    try {
+      await api.post(
+        "/api/admin/manifest/checkin-bulk",
+        { ticket_ids: pendingIds },
+        { auth: true },
+      );
+      playBeep("success");
+      toast.success(`✓ ${pendingIds.length} penumpang checked in`);
+      // Refresh
+      const updated = await api.get(
+        `/api/admin/manifest/group-by-code/${encodeURIComponent(lastCode || result.group_name)}`,
+        { auth: true },
+      );
+      setResult(updated);
+      clearDismissTimer();
+      dismissTimerRef.current = setTimeout(() => setResult(null), 5000);
+    } catch (e) {
+      playBeep("error");
+      toast.error(e.message || "Check-in gagal.");
     } finally {
       setProcessing(false);
     }
   };
 
-  const toggleCancelled = async (ticketId) => {
-    try {
-      await api.post(
-        `/api/admin/manifest/tickets/${ticketId}/toggle-cancel`,
-        {},
-        { auth: true },
-      );
-      toast.success("Ticket status updated");
-      onSuccess(); // Refresh data
-    } catch (e) {
-      toast.error(e.message || "Failed to update ticket");
-    }
-  };
-
-  const isCancelled = (t) => parseInt(t.cancelled) === 1;
-  const isCheckedIn = (t) => parseInt(t.checked_in) === 1;
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: "rgba(0,0,0,.6)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-        padding: 16,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="adm-card"
-        style={{
-          maxWidth: 900,
-          width: "100%",
-          maxHeight: "90vh",
-          overflow: "auto",
-          padding: 24,
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: 20,
-            paddingBottom: 16,
-            borderBottom: "2px solid var(--adm-border)",
-          }}
-        >
-          <div>
-            <h2 style={{ margin: 0, marginBottom: 8 }}>
-              👥 Group Check-In: {groupData.group_name}
-            </h2>
-            <div
-              style={{
-                display: "flex",
-                gap: 16,
-                flexWrap: "wrap",
-                fontSize: 13,
-                color: "var(--adm-text-muted)",
-              }}
-            >
-              <div>
-                <strong>{groupData.tickets.length}</strong> passengers
-              </div>
-              <div>•</div>
-              <div>
-                Boat: <strong>{groupData.boat_name}</strong>
-              </div>
-              <div>•</div>
-              <div>
-                Date: <strong>{fmtDate(groupData.trip_date)}</strong>
-              </div>
-              <div>•</div>
-              <div>
-                Direction: <strong>{groupData.direction}</strong>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "transparent",
-              border: "none",
-              fontSize: 24,
-              cursor: "pointer",
-              color: "var(--adm-text-muted)",
-              padding: 4,
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Stats Grid */}
-        <div
-          className="adm-stat-grid"
-          style={{
-            marginBottom: 20,
-            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          }}
-        >
-          <div className="adm-stat-card">
-            <div className="adm-stat-label">Total</div>
-            <div className="adm-stat-value">{groupData.tickets.length}</div>
-          </div>
-          <div className="adm-stat-card">
-            <div className="adm-stat-label">Checked In</div>
-            <div className="adm-stat-value" style={{ color: "#2e7d32" }}>
-              {groupData.tickets.filter(isCheckedIn).length}
-            </div>
-          </div>
-          <div className="adm-stat-card">
-            <div className="adm-stat-label">Pending</div>
-            <div className="adm-stat-value" style={{ color: "#e65100" }}>
-              {
-                groupData.tickets.filter(
-                  (t) => !isCheckedIn(t) && !isCancelled(t),
-                ).length
-              }
-            </div>
-          </div>
-          <div className="adm-stat-card">
-            <div className="adm-stat-label">Cancelled</div>
-            <div className="adm-stat-value" style={{ color: "#d32f2f" }}>
-              {groupData.tickets.filter(isCancelled).length}
-            </div>
-          </div>
-        </div>
-
-        {/* Tickets Table */}
-        <div className="adm-table-wrap" style={{ marginBottom: 20 }}>
-          <table className="adm-table">
-            <thead>
-              <tr>
-                <th style={{ width: 40 }}>
-                  <input
-                    type="checkbox"
-                    checked={
-                      selectedTickets.size > 0 &&
-                      selectedTickets.size ===
-                        groupData.tickets.filter((t) => !isCancelled(t)).length
-                    }
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedTickets(
-                          new Set(
-                            groupData.tickets
-                              .filter((t) => !isCancelled(t))
-                              .map((t) => t.id),
-                          ),
-                        );
-                      } else {
-                        setSelectedTickets(new Set());
-                      }
-                    }}
-                    title="Select/Deselect All"
-                  />
-                </th>
-                <th>Seq</th>
-                <th>Passenger Name</th>
-                <th>NIK/Passport</th>
-                <th>Seat</th>
-                <th>KET</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groupData.tickets.map((t) => (
-                <tr
-                  key={t.id}
-                  style={{
-                    opacity: isCancelled(t) ? 0.6 : 1,
-                    background: isCheckedIn(t)
-                      ? "#e8f5e9"
-                      : isCancelled(t)
-                        ? "#ffebee"
-                        : undefined,
-                  }}
-                >
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedTickets.has(t.id)}
-                      onChange={() => toggleTicket(t.id)}
-                      disabled={isCancelled(t) || isCheckedIn(t)}
-                    />
-                  </td>
-                  <td style={{ color: "var(--adm-text-faint)" }}>{t.seq_no}</td>
-                  <td className="adm-cell-primary">{t.passenger_name}</td>
-                  <td style={{ fontFamily: "monospace", fontSize: 12 }}>
-                    {t.id_passport || "-"}
-                  </td>
-                  <td>
-                    {t.seat_number ? (
-                      <span className="adm-badge adm-badge-success">
-                        {t.seat_number}
-                      </span>
-                    ) : (
-                      <span className="adm-badge adm-badge-neutral">-</span>
-                    )}
-                  </td>
-                  <td>
-                    <span
-                      className="adm-badge"
-                      style={{
-                        background: (t.ket || "")
-                          .toUpperCase()
-                          .includes("OVERNIGHT")
-                          ? "#e3f2fd"
-                          : (t.ket || "").toUpperCase().includes("DAY")
-                            ? "#fff3e0"
-                            : "var(--adm-bg)",
-                        color: (t.ket || "").toUpperCase().includes("OVERNIGHT")
-                          ? "#1565c0"
-                          : (t.ket || "").toUpperCase().includes("DAY")
-                            ? "#e65100"
-                            : "var(--adm-text-muted)",
-                      }}
-                    >
-                      {t.ket || "-"}
-                    </span>
-                  </td>
-                  <td>
-                    {isCheckedIn(t) ? (
-                      <span className="adm-badge adm-badge-success">
-                        ✓ Checked In
-                      </span>
-                    ) : isCancelled(t) ? (
-                      <span className="adm-badge adm-badge-danger">
-                        ✕ Cancelled
-                      </span>
-                    ) : (
-                      <span className="adm-badge adm-badge-warning">
-                        Pending
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className={`adm-btn adm-btn-sm ${
-                        isCancelled(t) ? "adm-btn-secondary" : "adm-btn-danger"
-                      }`}
-                      onClick={() => toggleCancelled(t.id)}
-                      disabled={isCheckedIn(t)}
-                      title={
-                        isCheckedIn(t)
-                          ? "Cannot cancel checked-in ticket"
-                          : isCancelled(t)
-                            ? "Uncancel this ticket"
-                            : "Cancel this ticket"
-                      }
-                    >
-                      {isCancelled(t) ? "Uncancel" : "Cancel"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Actions */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingTop: 16,
-            borderTop: "2px solid var(--adm-border)",
-          }}
-        >
-          <div style={{ fontSize: 13, color: "var(--adm-text-muted)" }}>
-            {selectedTickets.size > 0 ? (
-              <span>
-                <strong>{selectedTickets.size}</strong> ticket
-                {selectedTickets.size > 1 ? "s" : ""} selected for check-in
-              </span>
-            ) : (
-              <span>No tickets selected</span>
-            )}
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            <button className="adm-btn adm-btn-ghost" onClick={onClose}>
-              Close
-            </button>
-            <button
-              className="adm-btn adm-btn-success"
-              onClick={handleCheckinAll}
-              disabled={processing || selectedTickets.size === 0}
-              style={{
-                minWidth: 180,
-              }}
-            >
-              {processing
-                ? "Processing..."
-                : `✓ Check In ${selectedTickets.size > 0 ? `(${selectedTickets.size})` : ""}`}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Main CheckIn Component ───────────────────────────────────────────────────
-export default function CheckIn() {
-  const toast = useToast();
-  const [scannerActive, setScannerActive] = useState(false);
-  const [groupData, setGroupData] = useState(null);
-  const [manualCode, setManualCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const scannerRef = useRef(null);
-  const html5QrCodeRef = useRef(null);
-
-  // Initialize QR scanner
-  useEffect(() => {
-    const initScanner = async () => {
-      if (scannerActive && !html5QrCodeRef.current) {
-        // Dynamically import Html5Qrcode
-        if (!Html5Qrcode) {
-          const module = await import("html5-qrcode");
-          Html5Qrcode = module.Html5Qrcode;
-        }
-
-        const config = {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        };
-
-        html5QrCodeRef.current = new Html5Qrcode("qr-reader");
-
-        html5QrCodeRef.current
-          .start(
-            { facingMode: "environment" },
-            config,
-            (decodedText) => {
-              // Successfully scanned
-              handleScanSuccess(decodedText);
-            },
-            (errorMessage) => {
-              // Scan error (can be ignored, happens frequently during scanning)
-            },
-          )
-          .catch((err) => {
-            console.error("Failed to start scanner:", err);
-            toast.error("Failed to start camera scanner. Try manual input.");
-            setScannerActive(false);
-          });
-      }
-    };
-
-    if (scannerActive) {
-      initScanner();
-    }
-
-    return () => {
-      if (html5QrCodeRef.current && scannerActive) {
-        html5QrCodeRef.current
-          .stop()
-          .then(() => {
-            html5QrCodeRef.current = null;
-          })
-          .catch((err) => console.error("Scanner stop error:", err));
-      }
-    };
-  }, [scannerActive]);
-
-  const handleScanSuccess = async (code) => {
-    // Stop scanner
-    if (html5QrCodeRef.current) {
-      await html5QrCodeRef.current.stop();
-      html5QrCodeRef.current = null;
-    }
-    setScannerActive(false);
-
-    // Fetch group data
-    await fetchGroupData(code);
-  };
-
-  const fetchGroupData = async (code) => {
-    setLoading(true);
-    try {
-      // API call to get group data by ticket ID or group name
-      const response = await api.get(
-        `/api/admin/manifest/group-by-code/${encodeURIComponent(code)}`,
-        { auth: true },
-      );
-      setGroupData(response);
-      setManualCode("");
-    } catch (e) {
-      toast.error(
-        e.message || "Group not found. Check the code and try again.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleManualSubmit = (e) => {
+  // ── Manual search (no auto check-in — just lookup) ──────────────────────
+  const handleManualSearch = (e) => {
     e.preventDefault();
-    if (!manualCode.trim()) {
-      toast.error("Please enter a ticket ID or group name");
-      return;
-    }
-    fetchGroupData(manualCode.trim());
+    if (!manualCode.trim()) return;
+    fetchAndCheckin(manualCode.trim(), false); // false = don't auto check-in
+    setManualCode("");
   };
 
-  const handleStartScanner = () => {
-    setScannerActive(true);
-  };
-
-  const handleStopScanner = () => {
-    if (html5QrCodeRef.current) {
-      html5QrCodeRef.current
-        .stop()
-        .then(() => {
-          html5QrCodeRef.current = null;
-          setScannerActive(false);
-        })
-        .catch((err) => {
-          console.error("Scanner stop error:", err);
-          setScannerActive(false);
-        });
-    } else {
-      setScannerActive(false);
+  const clearDismissTimer = () => {
+    if (dismissTimerRef.current) {
+      clearTimeout(dismissTimerRef.current);
+      dismissTimerRef.current = null;
     }
   };
 
+  useEffect(() => () => clearDismissTimer(), []);
+
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="adm-page">
+    <div className="ci-page">
       <div className="adm-page-header">
         <div>
           <h1 style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <ScanLine size={28} strokeWidth={1.8} /> Check-In Scanner
+            <ScanLine size={26} strokeWidth={1.8} /> Check-In Scanner
           </h1>
-          <p>
-            Scan barcode/QR dari boarding pass atau masukkan kode manual untuk
-            check-in grup penumpang.
+          <p
+            style={{ margin: 0, color: "var(--adm-text-muted)", fontSize: 14 }}
+          >
+            Scan QR → otomatis check-in orang itu · kamera tetap aktif
           </p>
         </div>
       </div>
 
-      <div className="adm-card" style={{ maxWidth: 800, margin: "0 auto" }}>
-        {/* Scanner Section */}
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={{ marginTop: 0 }}>Scan Barcode / QR Code</h3>
-          {!scannerActive ? (
-            <button
-              className="adm-btn adm-btn-primary"
-              onClick={handleStartScanner}
-              style={{ width: "100%" }}
-            >
-              <Camera
-                size={15}
-                style={{ marginRight: 6, verticalAlign: "middle" }}
-              />
-              Start Camera Scanner
-            </button>
-          ) : (
-            <div>
-              <div
-                id="qr-reader"
-                ref={scannerRef}
-                style={{
-                  width: "100%",
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  marginBottom: 16,
-                }}
-              />
-              <button
-                className="adm-btn adm-btn-danger"
-                onClick={handleStopScanner}
-                style={{ width: "100%" }}
-              >
-                <CameraOff
+      <div className="ci-layout">
+        {/* ── Scanner column ── */}
+        <div className="ci-scanner-col">
+          <div className="adm-card ci-scanner-card">
+            <div className="ci-scanner-header">
+              <h3 style={{ margin: 0 }}>
+                <Camera
                   size={15}
-                  style={{ marginRight: 6, verticalAlign: "middle" }}
+                  style={{ verticalAlign: "middle", marginRight: 6 }}
                 />
-                Stop Scanner
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Manual Input Section */}
-        <div
-          style={{
-            paddingTop: 24,
-            borderTop: "2px solid var(--adm-border)",
-          }}
-        >
-          <h3 style={{ marginTop: 0 }}>Manual Input</h3>
-          <p
-            style={{
-              fontSize: 13,
-              color: "var(--adm-text-muted)",
-              marginBottom: 16,
-            }}
-          >
-            Enter ticket ID, group name, or any identifier from the manifest.
-          </p>
-          <form onSubmit={handleManualSubmit}>
-            <div style={{ display: "flex", gap: 12 }}>
-              <input
-                type="text"
-                placeholder="Enter ticket ID or group name..."
-                value={manualCode}
-                onChange={(e) => setManualCode(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: "10px 14px",
-                  border: "1px solid var(--adm-border-strong)",
-                  borderRadius: "var(--adm-radius-sm)",
-                  fontSize: 14,
-                }}
-                disabled={loading}
-              />
+                QR Scanner
+              </h3>
               <button
-                type="submit"
-                className="adm-btn adm-btn-primary"
-                disabled={loading || !manualCode.trim()}
+                className={`adm-btn adm-btn-sm ${scannerActive ? "adm-btn-danger" : "adm-btn-primary"}`}
+                onClick={() => setScannerActive((v) => !v)}
               >
-                {loading ? (
-                  "Searching..."
+                {scannerActive ? (
+                  <>
+                    <CameraOff size={13} style={{ marginRight: 4 }} /> Stop
+                  </>
                 ) : (
                   <>
-                    <Search
-                      size={14}
-                      style={{ verticalAlign: "middle", marginRight: 4 }}
-                    />
-                    Search
+                    <Camera size={13} style={{ marginRight: 4 }} /> Start
                   </>
                 )}
               </button>
             </div>
-          </form>
+
+            <div className="ci-scanner-viewport">
+              <div id="ci-qr-reader" className="ci-qr-reader" />
+              {!scannerActive && (
+                <div
+                  className="ci-scanner-idle"
+                  onClick={() => setScannerActive(true)}
+                >
+                  <ScanLine size={48} strokeWidth={1.2} />
+                  <span>Tap untuk mulai kamera</span>
+                </div>
+              )}
+              {scannerActive && scannerReady && (
+                <div className="ci-scanner-overlay">
+                  <div className="ci-scan-corners" />
+                  {searching && (
+                    <div className="ci-scanner-searching">
+                      <RefreshCw size={16} className="ci-spin" /> Checking…
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="ci-scanner-status">
+              <span
+                className={`ci-status-dot ${scannerActive && scannerReady ? "ci-dot-green" : "ci-dot-gray"}`}
+              />
+              {scannerActive && scannerReady
+                ? "Kamera aktif — arahkan ke QR code"
+                : scannerActive
+                  ? "Memulai kamera…"
+                  : "Kamera mati"}
+            </div>
+
+            {/* Manual input */}
+            <div className="ci-manual">
+              <div className="ci-manual-label">
+                <Search size={13} /> Input manual
+              </div>
+              <form className="ci-manual-form" onSubmit={handleManualSearch}>
+                <input
+                  type="text"
+                  placeholder="Nama grup / ticket code…"
+                  value={manualCode}
+                  onChange={(e) => setManualCode(e.target.value)}
+                  disabled={searching}
+                />
+                <button
+                  type="submit"
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                  disabled={searching || !manualCode.trim()}
+                >
+                  {searching ? (
+                    <RefreshCw size={13} className="ci-spin" />
+                  ) : (
+                    <Search size={13} />
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div
-            style={{
-              marginTop: 24,
-              padding: 20,
-              textAlign: "center",
-              color: "var(--adm-text-muted)",
-            }}
-          >
-            <div className="adm-loading">Loading group data...</div>
-          </div>
-        )}
-      </div>
+        {/* ── Result + log column ── */}
+        <div className="ci-result-col">
+          {result ? (
+            <ResultCard
+              result={result}
+              scannedId={scannedId}
+              onCheckinAll={handleCheckinAll}
+              onDismiss={() => {
+                clearDismissTimer();
+                setResult(null);
+              }}
+              processing={processing}
+            />
+          ) : (
+            <div className="ci-waiting">
+              <ScanLine size={40} strokeWidth={1.2} />
+              <p>Scan boarding pass untuk check-in</p>
+              <p style={{ fontSize: 12, marginTop: 4, opacity: 0.6 }}>
+                Setiap scan otomatis check-in orang tersebut
+              </p>
+            </div>
+          )}
 
-      {/* Group Check-In Modal */}
-      {groupData && (
-        <GroupCheckinModal
-          groupData={groupData}
-          onClose={() => setGroupData(null)}
-          onSuccess={() => {
-            // Refresh group data after check-in
-            if (groupData.group_name) {
-              fetchGroupData(groupData.group_name);
-            } else {
-              setGroupData(null);
-            }
-          }}
-        />
-      )}
+          {/* Recent check-in log */}
+          {scanLog.length > 0 && (
+            <div className="adm-card ci-log">
+              <h4 className="ci-log-title">
+                <CheckCheck size={14} /> Baru Saja Check-In
+              </h4>
+              <div className="ci-log-list">
+                {scanLog.map((entry) => (
+                  <div key={entry.id} className="ci-log-row">
+                    <div className="ci-log-icon">
+                      <Check size={12} />
+                    </div>
+                    <div className="ci-log-info">
+                      <div className="ci-log-name">{entry.name}</div>
+                      <div className="ci-log-sub">
+                        {entry.group}
+                        {entry.seat && <> · Kursi {entry.seat}</>}
+                        {" · "}
+                        {entry.boat}
+                      </div>
+                    </div>
+                    <div className="ci-log-time">{fmtTime(entry.ts)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

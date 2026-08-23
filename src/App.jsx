@@ -14,6 +14,7 @@ import Manifest from "./features/admin/pages/Manifest.jsx";
 import ManifestUpload from "./features/admin/pages/ManifestUpload.jsx";
 import ManifestFinal from "./features/admin/pages/ManifestFinal.jsx";
 import DailyOps from "./features/admin/pages/DailyOps.jsx";
+import Crew from "./features/admin/pages/Crew.jsx";
 import MasterData from "./features/admin/pages/MasterData.jsx";
 
 import ScrollToTop from "./components/ScrollToTop.jsx";
@@ -115,6 +116,14 @@ function App() {
               element={
                 <AdminLayout>
                   <ManifestFinal />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/crew"
+              element={
+                <AdminLayout>
+                  <Crew />
                 </AdminLayout>
               }
             />

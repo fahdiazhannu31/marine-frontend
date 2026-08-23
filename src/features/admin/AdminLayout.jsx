@@ -13,6 +13,7 @@ import {
   FileText,
   FolderOpen,
   Database,
+  Users,
   LogOut,
   Menu,
   Anchor,
@@ -33,6 +34,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Manifest Upload", path: "/admin/manifest-upload", icon: Upload },
   { label: "Manifest Final", path: "/admin/manifest-final", icon: FileText },
   { label: "Manifest", path: "/admin/manifest", icon: FolderOpen },
+  { label: "Crew", path: "/admin/crew", icon: Users },
   { label: "Master Data", path: "/admin/master-data", icon: Database },
 ];
 

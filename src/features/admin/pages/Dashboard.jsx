@@ -154,9 +154,9 @@ export default function Dashboard() {
   }, [rangeDays]);
 
   const summary = stats?.summary || {};
+  const manifest = stats?.manifest_summary || {};
   const totalStatusCount =
-    stats?.status_breakdown?.reduce((sum, s) => sum + Number(s.count), 0) ||
-    1;
+    stats?.status_breakdown?.reduce((sum, s) => sum + Number(s.count), 0) || 1;
 
   return (
     <div className="adm-page admin-dashboard">
@@ -191,177 +191,252 @@ export default function Dashboard() {
         </div>
       )}
 
-        {status === "ready" && stats && (
-          <>
-            {/* Summary cards */}
-            <section className="dash-summary-grid">
-              <div className="dash-card">
-                <span className="dash-card-label">Total Revenue</span>
-                <span className="dash-card-value">
-                  {formatRupiah(summary.total_revenue)}
-                </span>
-                <span className="dash-card-sub">Paid &amp; Settled</span>
-              </div>
+      {status === "ready" && stats && (
+        <>
+          {/* Summary cards — online bookings */}
+          <section className="dash-summary-grid">
+            <div className="dash-card">
+              <span className="dash-card-label">Total Revenue</span>
+              <span className="dash-card-value">
+                {formatRupiah(summary.total_revenue)}
+              </span>
+              <span className="dash-card-sub">Paid &amp; Settled</span>
+            </div>
 
-              <div className="dash-card">
-                <span className="dash-card-label">Total Transactions</span>
-                <span className="dash-card-value">
-                  {summary.total_transactions ?? 0}
-                </span>
-                <span className="dash-card-sub">All statuses</span>
-              </div>
+            <div className="dash-card">
+              <span className="dash-card-label">Total Transactions</span>
+              <span className="dash-card-value">
+                {summary.total_transactions ?? 0}
+              </span>
+              <span className="dash-card-sub">All statuses</span>
+            </div>
 
-              <div className="dash-card">
-                <span className="dash-card-label">Total Passengers</span>
-                <span className="dash-card-value">
-                  {summary.total_passengers ?? 0}
-                </span>
-                <span className="dash-card-sub">Paid &amp; Settled pax</span>
-              </div>
+            <div className="dash-card">
+              <span className="dash-card-label">Online Passengers</span>
+              <span className="dash-card-value">
+                {summary.total_passengers ?? 0}
+              </span>
+              <span className="dash-card-sub">Paid &amp; Settled pax</span>
+            </div>
 
-              <div className="dash-card dash-card-accent">
-                <span className="dash-card-label">Checked-in</span>
-                <span className="dash-card-value">
-                  {summary.total_checked_in ?? 0}
+            <div className="dash-card dash-card-accent">
+              <span className="dash-card-label">Online Check-in</span>
+              <span className="dash-card-value">
+                {summary.total_checked_in ?? 0}
+              </span>
+              <span className="dash-card-sub">Scanned at boarding</span>
+            </div>
+          </section>
+
+          {/* Manifest upload summary */}
+          {manifest.upload_count > 0 && (
+            <section className="adm-section">
+              <div className="adm-section-heading">
+                <h2>Manifest Upload Summary</h2>
+                <span className="adm-badge adm-badge-neutral">
+                  {manifest.upload_count} uploads
                 </span>
-                <span className="dash-card-sub">Scanned at boarding</span>
+              </div>
+              <div className="dash-summary-grid">
+                <div className="dash-card">
+                  <span className="dash-card-label">Total Manifest Pax</span>
+                  <span className="dash-card-value">
+                    {manifest.total_pax ?? 0}
+                  </span>
+                  <span className="dash-card-sub">
+                    {manifest.range_pax ?? 0} dalam {stats.range_days} hari
+                    terakhir
+                  </span>
+                </div>
+                <div className="dash-card dash-card-accent">
+                  <span className="dash-card-label">Manifest Check-in</span>
+                  <span className="dash-card-value">
+                    {manifest.checked_in ?? 0}
+                  </span>
+                  <span className="dash-card-sub">
+                    {manifest.range_checked_in ?? 0} dalam {stats.range_days}{" "}
+                    hari terakhir
+                  </span>
+                </div>
+                <div className="dash-card">
+                  <span className="dash-card-label">Overnight</span>
+                  <span className="dash-card-value">
+                    {manifest.overnight ?? 0}
+                  </span>
+                  <span className="dash-card-sub">
+                    {manifest.range_overnight ?? 0} dalam {stats.range_days}{" "}
+                    hari terakhir
+                  </span>
+                </div>
+                <div className="dash-card">
+                  <span className="dash-card-label">Day Trip</span>
+                  <span className="dash-card-value">
+                    {manifest.daytrip ?? 0}
+                  </span>
+                  <span className="dash-card-sub">
+                    {manifest.range_daytrip ?? 0} dalam {stats.range_days} hari
+                    terakhir
+                  </span>
+                </div>
+                {manifest.staff > 0 && (
+                  <div className="dash-card">
+                    <span className="dash-card-label">Staff</span>
+                    <span className="dash-card-value">{manifest.staff}</span>
+                    <span className="dash-card-sub">Non-paying</span>
+                  </div>
+                )}
+                {manifest.foc > 0 && (
+                  <div className="dash-card">
+                    <span className="dash-card-label">FOC</span>
+                    <span className="dash-card-value">{manifest.foc}</span>
+                    <span className="dash-card-sub">Free of charge</span>
+                  </div>
+                )}
+                {manifest.vendor > 0 && (
+                  <div className="dash-card">
+                    <span className="dash-card-label">Vendor</span>
+                    <span className="dash-card-value">{manifest.vendor}</span>
+                    <span className="dash-card-sub">Vendor pax</span>
+                  </div>
+                )}
               </div>
             </section>
+          )}
 
-            <div className="dash-main-grid">
-              {/* Revenue trend chart */}
-              <section className="dash-panel dash-panel-wide">
-                <h2>Revenue Trend</h2>
-                {stats.revenue_trend?.length > 0 ? (
-                  <RevenueTrendChart data={stats.revenue_trend} />
-                ) : (
-                  <p className="empty-state">No revenue data yet</p>
+          <div className="dash-main-grid">
+            {/* Revenue trend chart */}
+            <section className="dash-panel dash-panel-wide">
+              <h2>Revenue Trend</h2>
+              {stats.revenue_trend?.length > 0 ? (
+                <RevenueTrendChart data={stats.revenue_trend} />
+              ) : (
+                <p className="empty-state">No revenue data yet</p>
+              )}
+            </section>
+
+            {/* Status breakdown */}
+            <section className="dash-panel">
+              <h2>Booking Status</h2>
+              <div className="dash-status-list">
+                {stats.status_breakdown?.map((s) => {
+                  const pct = Math.round(
+                    (Number(s.count) / totalStatusCount) * 100,
+                  );
+                  return (
+                    <div className="dash-status-row" key={s.status}>
+                      <div className="dash-status-label">
+                        <span
+                          className="dash-status-dot"
+                          style={{ background: statusColor(s.status) }}
+                        />
+                        {s.status || "UNKNOWN"}
+                      </div>
+                      <div className="dash-status-bar-track">
+                        <div
+                          className="dash-status-bar-fill"
+                          style={{
+                            width: `${pct}%`,
+                            background: statusColor(s.status),
+                          }}
+                        />
+                      </div>
+                      <div className="dash-status-count">
+                        {s.count} ({pct}%)
+                      </div>
+                    </div>
+                  );
+                })}
+                {(!stats.status_breakdown ||
+                  stats.status_breakdown.length === 0) && (
+                  <p className="empty-state">No bookings yet</p>
                 )}
-              </section>
+              </div>
+            </section>
+          </div>
 
-              {/* Status breakdown */}
-              <section className="dash-panel">
-                <h2>Booking Status</h2>
-                <div className="dash-status-list">
-                  {stats.status_breakdown?.map((s) => {
-                    const pct = Math.round(
-                      (Number(s.count) / totalStatusCount) * 100,
-                    );
-                    return (
-                      <div className="dash-status-row" key={s.status}>
-                        <div className="dash-status-label">
-                          <span
-                            className="dash-status-dot"
-                            style={{ background: statusColor(s.status) }}
-                          />
-                          {s.status || "UNKNOWN"}
+          <div className="dash-main-grid">
+            {/* Top packages */}
+            <section className="dash-panel">
+              <h2>Top Packages</h2>
+              {stats.top_packages?.length > 0 ? (
+                <div className="dash-top-packages">
+                  {stats.top_packages.map((p, i) => (
+                    <div className="dash-package-row" key={i}>
+                      <div className="dash-package-rank">{i + 1}</div>
+                      <div className="dash-package-info">
+                        <div className="dash-package-name">
+                          {p.package_name || "N/A"}
                         </div>
-                        <div className="dash-status-bar-track">
-                          <div
-                            className="dash-status-bar-fill"
-                            style={{
-                              width: `${pct}%`,
-                              background: statusColor(s.status),
-                            }}
-                          />
-                        </div>
-                        <div className="dash-status-count">
-                          {s.count} ({pct}%)
+                        <div className="dash-package-meta">
+                          {p.bookings} bookings
                         </div>
                       </div>
-                    );
-                  })}
-                  {(!stats.status_breakdown ||
-                    stats.status_breakdown.length === 0) && (
-                    <p className="empty-state">No bookings yet</p>
-                  )}
+                      <div className="dash-package-revenue">
+                        {formatRupiah(p.revenue)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </section>
-            </div>
+              ) : (
+                <p className="empty-state">No package data yet</p>
+              )}
+            </section>
 
-            <div className="dash-main-grid">
-              {/* Top packages */}
-              <section className="dash-panel">
-                <h2>Top Packages</h2>
-                {stats.top_packages?.length > 0 ? (
-                  <div className="dash-top-packages">
-                    {stats.top_packages.map((p, i) => (
-                      <div className="dash-package-row" key={i}>
-                        <div className="dash-package-rank">{i + 1}</div>
-                        <div className="dash-package-info">
-                          <div className="dash-package-name">
-                            {p.package_name || "N/A"}
-                          </div>
-                          <div className="dash-package-meta">
-                            {p.bookings} bookings
-                          </div>
-                        </div>
-                        <div className="dash-package-revenue">
-                          {formatRupiah(p.revenue)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="empty-state">No package data yet</p>
-                )}
-              </section>
-
-              {/* Recent transactions */}
-              <section className="dash-panel dash-panel-wide">
-                <h2>Recent Transactions</h2>
-                {stats.recent_transactions?.length > 0 ? (
-                  <div className="dash-table-wrapper">
-                    <table className="dash-table">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Passenger</th>
-                          <th>Package</th>
-                          <th>Pax</th>
-                          <th>Amount</th>
-                          <th>Status</th>
-                          <th>Check-in</th>
+            {/* Recent transactions */}
+            <section className="dash-panel dash-panel-wide">
+              <h2>Recent Transactions</h2>
+              {stats.recent_transactions?.length > 0 ? (
+                <div className="dash-table-wrapper">
+                  <table className="dash-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Passenger</th>
+                        <th>Package</th>
+                        <th>Pax</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Check-in</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.recent_transactions.map((t) => (
+                        <tr key={t.id}>
+                          <td>#{t.id}</td>
+                          <td>{t.user_name || "-"}</td>
+                          <td>{t.package_name || "-"}</td>
+                          <td>{t.jml_pax}</td>
+                          <td>{formatRupiah(t.amount)}</td>
+                          <td>
+                            <span
+                              className="dash-status-badge"
+                              style={{
+                                background: `${statusColor(t.status)}22`,
+                                color: statusColor(t.status),
+                              }}
+                            >
+                              {t.status}
+                            </span>
+                          </td>
+                          <td>
+                            {t.attendance ? (
+                              <span className="dash-checked">✓</span>
+                            ) : (
+                              <span className="dash-not-checked">—</span>
+                            )}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {stats.recent_transactions.map((t) => (
-                          <tr key={t.id}>
-                            <td>#{t.id}</td>
-                            <td>{t.user_name || "-"}</td>
-                            <td>{t.package_name || "-"}</td>
-                            <td>{t.jml_pax}</td>
-                            <td>{formatRupiah(t.amount)}</td>
-                            <td>
-                              <span
-                                className="dash-status-badge"
-                                style={{
-                                  background: `${statusColor(t.status)}22`,
-                                  color: statusColor(t.status),
-                                }}
-                              >
-                                {t.status}
-                              </span>
-                            </td>
-                            <td>
-                              {t.attendance ? (
-                                <span className="dash-checked">✓</span>
-                              ) : (
-                                <span className="dash-not-checked">—</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="empty-state">No transactions yet</p>
-                )}
-              </section>
-            </div>
-          </>
-        )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="empty-state">No transactions yet</p>
+              )}
+            </section>
+          </div>
+        </>
+      )}
     </div>
   );
 }

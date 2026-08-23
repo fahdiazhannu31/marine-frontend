@@ -123,44 +123,111 @@ export default function DailyOps() {
           <p className="adm-empty">No schedules today or tomorrow.</p>
         ) : (
           <div className="adm-stat-grid">
-            {today_tomorrow.map((s) => (
-              <div key={s.id} className="adm-stat-card">
-                <span
-                  className={`adm-badge ${
-                    s.is_today ? "adm-badge-info" : "adm-badge-neutral"
-                  }`}
-                >
-                  {s.is_today ? "Today" : "Tomorrow"}
-                </span>
-                <div style={{ marginTop: 10, fontWeight: 700, fontSize: 15 }}>
-                  {s.boat_name || "N/A"}
-                </div>
-                <div className="adm-cell-muted" style={{ marginBottom: 12 }}>
-                  {s.type === "RETURN" ? "Return" : "Departure"} •{" "}
-                  {formatDateTime(s.date)}
-                </div>
-                <div style={{ display: "flex", gap: 18 }}>
-                  <div>
-                    <div className="adm-stat-value" style={{ fontSize: 18 }}>
-                      {s.booked_pax}/{s.capacity}
-                    </div>
-                    <div className="adm-stat-label">Booked</div>
+            {today_tomorrow.map((s) => {
+              const hasManifest = (s.manifest_pax ?? 0) > 0;
+              return (
+                <div key={s.id} className="adm-stat-card">
+                  <span
+                    className={`adm-badge ${
+                      s.is_today ? "adm-badge-info" : "adm-badge-neutral"
+                    }`}
+                  >
+                    {s.is_today ? "Today" : "Tomorrow"}
+                  </span>
+                  <div style={{ marginTop: 10, fontWeight: 700, fontSize: 15 }}>
+                    {s.boat_name || "N/A"}
                   </div>
-                  <div>
-                    <div className="adm-stat-value" style={{ fontSize: 18 }}>
-                      {s.checked_in_pax}
-                    </div>
-                    <div className="adm-stat-label">Checked In</div>
+                  <div className="adm-cell-muted" style={{ marginBottom: 12 }}>
+                    {s.type === "RETURN" ? "Return" : "Departure"} •{" "}
+                    {formatDateTime(s.date)}
                   </div>
-                  <div>
-                    <div className="adm-stat-value" style={{ fontSize: 18 }}>
-                      {s.fill_percent}%
+
+                  {/* Combined totals row */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 18,
+                      marginBottom: hasManifest ? 10 : 0,
+                    }}
+                  >
+                    <div>
+                      <div className="adm-stat-value" style={{ fontSize: 18 }}>
+                        {s.total_pax ?? s.booked_pax}/{s.capacity}
+                      </div>
+                      <div className="adm-stat-label">Total Pax</div>
                     </div>
-                    <div className="adm-stat-label">Full</div>
+                    <div>
+                      <div className="adm-stat-value" style={{ fontSize: 18 }}>
+                        {s.total_checked_in ?? s.checked_in_pax}
+                      </div>
+                      <div className="adm-stat-label">Checked In</div>
+                    </div>
+                    <div>
+                      <div className="adm-stat-value" style={{ fontSize: 18 }}>
+                        {s.fill_percent}%
+                      </div>
+                      <div className="adm-stat-label">Full</div>
+                    </div>
                   </div>
+
+                  {/* Breakdown: online vs manifest */}
+                  {hasManifest && (
+                    <div
+                      style={{
+                        marginTop: 8,
+                        paddingTop: 8,
+                        borderTop: "1px solid var(--adm-border)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                        fontSize: 12,
+                        color: "var(--adm-text-muted)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span>🌐 Online booking</span>
+                        <span>
+                          <strong>{s.booked_pax}</strong> pax,{" "}
+                          <strong>{s.checked_in_pax}</strong> check-in
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span>📋 Manifest upload</span>
+                        <span>
+                          <strong>{s.manifest_pax}</strong> pax,{" "}
+                          <strong>{s.manifest_checked_in}</strong> check-in
+                        </span>
+                      </div>
+                      {(s.manifest_overnight > 0 || s.manifest_daytrip > 0) && (
+                        <div style={{ display: "flex", gap: 12, marginTop: 2 }}>
+                          {s.manifest_overnight > 0 && (
+                            <span>
+                              🌙 Overnight:{" "}
+                              <strong>{s.manifest_overnight}</strong>
+                            </span>
+                          )}
+                          {s.manifest_daytrip > 0 && (
+                            <span>
+                              ☀️ Day trip: <strong>{s.manifest_daytrip}</strong>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -175,9 +242,7 @@ export default function DailyOps() {
         </div>
 
         {verifications.length === 0 ? (
-          <p className="adm-empty">
-            Nothing awaiting verification right now.
-          </p>
+          <p className="adm-empty">Nothing awaiting verification right now.</p>
         ) : (
           <div className="adm-table-wrap">
             <table className="adm-table">

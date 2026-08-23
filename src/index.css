@@ -6,6 +6,8 @@
 
 html {
   scroll-behavior: auto;
+  /* Prevent any element from causing horizontal scroll on mobile */
+  overflow-x: hidden;
 }
 
 body {
@@ -14,6 +16,9 @@ body {
   background: #ffffff;
   color: #15313d;
   font-family: "Inter", Arial, Helvetica, sans-serif;
+  /* Contain horizontal overflow so nothing pushes beyond viewport */
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 button,

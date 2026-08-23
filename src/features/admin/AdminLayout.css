@@ -27,11 +27,14 @@
   flex-shrink: 0;
   background: var(--adm-sidebar-bg);
   color: var(--adm-sidebar-text);
-  position: sticky;
+  /* Fixed sidebar — stays in place for all scroll methods (mouse, touchpad, touch) */
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
-  height: 100dvh; /* fallback-safe: dvh accounts for mobile browser chrome */
-  overflow: hidden; /* prevent sidebar itself from scrolling */
+  height: 100dvh;
+  overflow: hidden;
+  z-index: 100;
 }
 
 .adm-sidebar-brand {
@@ -172,7 +175,9 @@
 .adm-content {
   flex: 1;
   min-width: 0;
-  overflow-y: auto;
+  /* Offset for the fixed 240px sidebar — works with mouse, touchpad, touch */
+  margin-left: 240px;
+  min-height: 100vh;
 }
 
 .adm-content-inner {
@@ -197,6 +202,9 @@
   color: #ffffff;
   font-size: 16px;
   cursor: pointer;
+  /* Center the hamburger icon inside the button */
+  align-items: center;
+  justify-content: center;
 }
 
 .adm-sidebar-backdrop {
@@ -205,16 +213,13 @@
 
 @media (max-width: 900px) {
   .adm-mobile-toggle {
-    display: block;
+    display: flex;
   }
 
   .adm-sidebar {
-    position: fixed;
     left: -260px;
-    top: 0;
-    z-index: 1300;
-    height: 100dvh; /* use dvh so address bar on mobile doesn't clip footer */
     transition: left 200ms ease;
+    /* already position:fixed from base style */
   }
 
   .adm-sidebar-open {
@@ -227,6 +232,11 @@
     inset: 0;
     z-index: 1250;
     background: rgba(20, 22, 26, 0.5);
+  }
+
+  /* On mobile the sidebar overlays — no margin needed */
+  .adm-content {
+    margin-left: 0;
   }
 
   .adm-content-inner {

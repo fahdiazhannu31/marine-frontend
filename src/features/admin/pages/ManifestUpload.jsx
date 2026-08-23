@@ -475,19 +475,23 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         ? true
         : filter === "cancelled"
           ? isCancelled(t)
-          : filter === "overnight"
-            ? (t.ket || "").toUpperCase().includes("OVERNIGHT")
-            : filter === "daytrip"
-              ? (t.ket || "").toUpperCase().includes("DAY")
-              : filter === "unassigned"
-                ? !t.seat_number && !isCancelled(t)
-                : filter === "staff"
-                  ? (t.ket || "").toUpperCase() === "STAFF"
-                  : filter === "foc"
-                    ? (t.ket || "").toUpperCase() === "FOC"
-                    : filter === "vendor"
-                      ? (t.ket || "").toUpperCase() === "VENDOR"
-                      : true;
+          : filter === "checked_in"
+            ? parseInt(t.checked_in) === 1 && !isCancelled(t)
+            : filter === "pending"
+              ? parseInt(t.checked_in) !== 1 && !isCancelled(t)
+              : filter === "overnight"
+                ? (t.ket || "").toUpperCase().includes("OVERNIGHT")
+                : filter === "daytrip"
+                  ? (t.ket || "").toUpperCase().includes("DAY")
+                  : filter === "unassigned"
+                    ? !t.seat_number && !isCancelled(t)
+                    : filter === "staff"
+                      ? (t.ket || "").toUpperCase() === "STAFF"
+                      : filter === "foc"
+                        ? (t.ket || "").toUpperCase() === "FOC"
+                        : filter === "vendor"
+                          ? (t.ket || "").toUpperCase() === "VENDOR"
+                          : true;
     return matchSearch && matchFilter;
   });
 
@@ -720,6 +724,8 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         </div>
         {[
           "all",
+          "pending",
+          "checked_in",
           "unassigned",
           "cancelled",
           "overnight",
@@ -732,11 +738,19 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             key={f}
             className={`adm-btn adm-btn-sm ${filter === f ? "adm-btn-primary" : "adm-btn-secondary"}`}
             onClick={() => setFilter(f)}
-            style={{
-              position: "relative",
-            }}
+            style={{ position: "relative" }}
           >
-            {f === "cancelled" ? (
+            {f === "pending" ? (
+              <>
+                <AlertTriangle size={12} style={{ verticalAlign: "middle" }} />{" "}
+                Pending
+              </>
+            ) : f === "checked_in" ? (
+              <>
+                <CheckCheck size={12} style={{ verticalAlign: "middle" }} />{" "}
+                Checked In
+              </>
+            ) : f === "cancelled" ? (
               <>
                 <X size={12} style={{ verticalAlign: "middle" }} /> Cancelled
               </>
