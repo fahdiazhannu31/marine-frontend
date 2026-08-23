@@ -27,14 +27,13 @@
   flex-shrink: 0;
   background: var(--adm-sidebar-bg);
   color: var(--adm-sidebar-text);
-  /* Fixed sidebar — stays in place for all scroll methods (mouse, touchpad, touch) */
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  z-index: 100;
+  z-index: 1300; /* must be above backdrop (1250) and toggle (1200) */
 }
 
 .adm-sidebar-brand {
@@ -193,7 +192,7 @@
   position: fixed;
   top: 14px;
   left: 14px;
-  z-index: 1200;
+  z-index: 1400; /* above sidebar (1300) so it stays tappable */
   width: 40px;
   height: 40px;
   border: none;
@@ -202,7 +201,6 @@
   color: #ffffff;
   font-size: 16px;
   cursor: pointer;
-  /* Center the hamburger icon inside the button */
   align-items: center;
   justify-content: center;
 }
