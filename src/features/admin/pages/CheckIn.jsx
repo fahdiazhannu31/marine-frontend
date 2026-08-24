@@ -374,12 +374,32 @@ export default function CheckIn() {
   const [scanLog, setScanLog] = useState([]);
   const [manualCode, setManualCode] = useState("");
   const [searching, setSearching] = useState(false);
+  // hwMode = dedicated hardware-scanner mode: no camera, input always focused
+  const [hwMode, setHwMode] = useState(false);
 
   const html5QrRef = useRef(null);
   const dismissTimerRef = useRef(null);
   const lastCodeRef = useRef(null);
   const fetchAndCheckinRef = useRef(null);
+  const hwInputRef = useRef(null);
   const DEBOUNCE_MS = 3000;
+
+  // ── Keep HW input always focused when hwMode is on ──────────────────────
+  useEffect(() => {
+    if (!hwMode) return;
+    const focus = () => {
+      if (hwInputRef.current && document.activeElement !== hwInputRef.current) {
+        hwInputRef.current.focus();
+      }
+    };
+    focus();
+    document.addEventListener("click", focus);
+    const iv = setInterval(focus, 500);
+    return () => {
+      document.removeEventListener("click", focus);
+      clearInterval(iv);
+    };
+  }, [hwMode]);
 
   // ── Scanner lifecycle ───────────────────────────────────────────────────
   const startScanner = useCallback(async () => {
@@ -606,7 +626,135 @@ export default function CheckIn() {
             otomatis check-in
           </p>
         </div>
+        {/* Mode toggle: camera vs hardware scanner (PDA) */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            className={`adm-btn adm-btn-sm ${!hwMode ? "adm-btn-primary" : "adm-btn-secondary"}`}
+            onClick={() => {
+              setHwMode(false);
+            }}
+          >
+            <Camera size={13} style={{ marginRight: 4 }} /> Kamera
+          </button>
+          <button
+            className={`adm-btn adm-btn-sm ${hwMode ? "adm-btn-primary" : "adm-btn-secondary"}`}
+            onClick={() => {
+              setHwMode(true);
+              setScannerActive(false);
+            }}
+          >
+            <Search size={13} style={{ marginRight: 4 }} /> PDA Scanner
+          </button>
+        </div>
       </div>
+
+      {/* ── Hardware Scanner Mode (CASHCOW PDA / HID scanner) ── */}
+      {hwMode && (
+        <div
+          style={{
+            marginBottom: 24,
+            padding: "20px 24px",
+            border: "2px solid var(--adm-accent)",
+            borderRadius: "var(--adm-radius-lg)",
+            background: "linear-gradient(135deg, #fff8f0, #ffffff)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 14,
+            }}
+          >
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: "#22c55e",
+                boxShadow: "0 0 8px rgba(34,197,94,.7)",
+                animation: "pulse 2s infinite",
+              }}
+            />
+            <span style={{ fontWeight: 700, fontSize: 15 }}>
+              Mode PDA Scanner — Siap Scan
+            </span>
+          </div>
+          <p
+            style={{
+              margin: "0 0 14px",
+              fontSize: 13,
+              color: "var(--adm-text-muted)",
+            }}
+          >
+            Input terfokus otomatis. Arahkan scanner ke QR boarding pass atau QR
+            ID crew, tekan trigger — langsung check-in.
+          </p>
+          <div style={{ position: "relative" }}>
+            <input
+              ref={hwInputRef}
+              type="text"
+              value={manualCode}
+              onChange={(e) => setManualCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && manualCode.trim() && !searching) {
+                  e.preventDefault();
+                  const code = manualCode.trim();
+                  setManualCode("");
+                  fetchAndCheckin(code, true);
+                }
+              }}
+              placeholder="← Fokus di sini. Arahkan scanner dan tekan trigger…"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
+              disabled={searching}
+              style={{
+                width: "100%",
+                padding: "14px 16px",
+                fontSize: 15,
+                border: "2px solid var(--adm-accent)",
+                borderRadius: "var(--adm-radius-sm)",
+                background: searching ? "var(--adm-bg)" : "#ffffff",
+                outline: "none",
+                boxShadow: "0 0 0 4px rgba(242,136,28,.12)",
+              }}
+            />
+            {searching && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: "var(--adm-accent)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                <RefreshCw size={14} className="ci-spin" /> Processing…
+              </div>
+            )}
+          </div>
+          {manualCode && (
+            <p
+              style={{
+                margin: "6px 0 0",
+                fontSize: 12,
+                color: "var(--adm-text-muted)",
+              }}
+            >
+              Kode: <code>{manualCode}</code> — tekan Enter atau trigger untuk
+              proses
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="ci-layout">
         {/* ── Scanner column ── */}
