@@ -576,6 +576,8 @@ export default function CheckIn() {
   const handleManualSearch = (e) => {
     e.preventDefault();
     if (!manualCode.trim()) return;
+    // Manual form submit = no auto-checkin (just lookup)
+    // Hardware scanner uses onKeyDown Enter above with autoCheckin=true
     fetchAndCheckin(manualCode.trim(), false);
     setManualCode("");
   };
@@ -670,15 +672,28 @@ export default function CheckIn() {
 
             <div className="ci-manual">
               <div className="ci-manual-label">
-                <Search size={13} /> Input manual
+                <Search size={13} /> Hardware scanner / input manual
               </div>
               <form className="ci-manual-form" onSubmit={handleManualSearch}>
                 <input
                   type="text"
-                  placeholder="Ticket code / grup / CREW_xxx…"
+                  placeholder="Arahkan scanner atau ketik kode…"
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Hardware scanners (HID mode) emit Enter after the code —
+                    // auto-submit without needing to click the button
+                    if (e.key === "Enter" && manualCode.trim() && !searching) {
+                      e.preventDefault();
+                      fetchAndCheckin(manualCode.trim(), true);
+                      setManualCode("");
+                    }
+                  }}
                   disabled={searching}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                 />
                 <button
                   type="submit"
