@@ -37,7 +37,6 @@
 .ci-scanner-viewport {
   position: relative;
   width: 100%;
-  min-height: 300px; /* explicit min-height for Android browsers */
   aspect-ratio: 1;
   background: #000000;
   overflow: hidden;
@@ -52,12 +51,6 @@
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
-  display: block !important; /* prevent global svg/inline rules from hiding it */
-}
-
-/* html5-qrcode injects a shaded region — make it visible */
-.ci-qr-reader #qr-shaded-region {
-  border-width: 40px !important;
 }
 
 .ci-scanner-idle {

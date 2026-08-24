@@ -389,69 +389,29 @@ export default function CheckIn() {
       Html5Qrcode = mod.Html5Qrcode;
     }
     try {
-      const qr = new Html5Qrcode("ci-qr-reader", { verbose: false });
+      const qr = new Html5Qrcode("ci-qr-reader");
       html5QrRef.current = qr;
-
-      const config = { fps: 10, qrbox: { width: 200, height: 200 } };
-      const onSuccess = (text) => {
-        const now = Date.now();
-        if (
-          lastCodeRef.current?.code === text &&
-          now - lastCodeRef.current.ts < DEBOUNCE_MS
-        )
-          return;
-        lastCodeRef.current = { code: text, ts: now };
-        playBeep("success");
-        fetchAndCheckinRef.current?.(text, true);
-      };
-
-      // Strategy 1: enumerate cameras → use deviceId (most reliable on Android)
-      let started = false;
-      try {
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length > 0) {
-          // Prefer back/rear camera label; fall back to last device
-          const backCam =
-            devices.find((d) => /back|rear|environment/i.test(d.label)) ||
-            devices[devices.length - 1];
-          await qr.start(backCam.id, config, onSuccess, () => {});
-          started = true;
-        }
-      } catch (_) {
-        /* getCameras not supported or permission not yet granted */
-      }
-
-      // Strategy 2: facingMode constraint
-      if (!started) {
-        await qr.start(
-          { facingMode: { ideal: "environment" } },
-          config,
-          onSuccess,
-          () => {},
-        );
-      }
-
+      await qr.start(
+        { facingMode: "environment" },
+        { fps: 15, qrbox: { width: 220, height: 220 } },
+        (text) => {
+          const now = Date.now();
+          if (
+            lastCodeRef.current?.code === text &&
+            now - lastCodeRef.current.ts < DEBOUNCE_MS
+          )
+            return;
+          lastCodeRef.current = { code: text, ts: now };
+          playBeep("success");
+          fetchAndCheckinRef.current?.(text, true);
+        },
+        () => {},
+      );
       setScannerReady(true);
     } catch (err) {
-      console.error("Scanner failed:", err);
-      const msg = (err?.message || String(err)).toLowerCase();
-      if (/permission|denied|not allowed/i.test(msg)) {
-        toast.error(
-          "Izin kamera ditolak. Buka pengaturan browser → izinkan kamera untuk situs ini.",
-        );
-      } else if (/not found|no device|no camera/i.test(msg)) {
-        toast.error("Tidak ada kamera ditemukan di perangkat ini.");
-      } else {
-        toast.error(
-          `Kamera gagal: ${err?.message || err}. Gunakan input manual.`,
-        );
-      }
-      if (html5QrRef.current) {
-        try {
-          html5QrRef.current.clear();
-        } catch (_) {}
-        html5QrRef.current = null;
-      }
+      console.error(err);
+      toast.error("Kamera tidak bisa diakses. Gunakan input manual.");
+      html5QrRef.current = null;
       setScannerActive(false);
     }
   }, []); // eslint-disable-line
