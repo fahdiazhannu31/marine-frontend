@@ -389,27 +389,52 @@ export default function CheckIn() {
       Html5Qrcode = mod.Html5Qrcode;
     }
     try {
-      const qr = new Html5Qrcode("ci-qr-reader");
+      const qr = new Html5Qrcode("ci-qr-reader", { verbose: false });
       html5QrRef.current = qr;
-      await qr.start(
-        { facingMode: "environment" },
-        { fps: 15, qrbox: { width: 220, height: 220 } },
-        (text) => {
-          const now = Date.now();
-          if (
-            lastCodeRef.current?.code === text &&
-            now - lastCodeRef.current.ts < DEBOUNCE_MS
-          )
-            return;
-          lastCodeRef.current = { code: text, ts: now };
-          playBeep("success");
-          fetchAndCheckinRef.current?.(text, true);
-        },
-        () => {},
-      );
+
+      const config = {
+        fps: 10,
+        qrbox: { width: 200, height: 200 },
+        aspectRatio: 1.0,
+      };
+      const onSuccess = (text) => {
+        const now = Date.now();
+        if (
+          lastCodeRef.current?.code === text &&
+          now - lastCodeRef.current.ts < DEBOUNCE_MS
+        )
+          return;
+        lastCodeRef.current = { code: text, ts: now };
+        playBeep("success");
+        fetchAndCheckinRef.current?.(text, true);
+      };
+      const onError = () => {};
+
+      // Try back camera first, fallback to any camera
+      try {
+        await qr.start(
+          { facingMode: { ideal: "environment" } },
+          config,
+          onSuccess,
+          onError,
+        );
+      } catch (_) {
+        try {
+          await qr.start(
+            { facingMode: "environment" },
+            config,
+            onSuccess,
+            onError,
+          );
+        } catch (_2) {
+          // Last resort: let browser pick any camera
+          await qr.start({ facingMode: "user" }, config, onSuccess, onError);
+        }
+      }
+
       setScannerReady(true);
     } catch (err) {
-      console.error(err);
+      console.error("Scanner failed:", err);
       toast.error("Kamera tidak bisa diakses. Gunakan input manual.");
       html5QrRef.current = null;
       setScannerActive(false);
