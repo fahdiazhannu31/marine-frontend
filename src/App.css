@@ -62,10 +62,24 @@ button {
 
 img,
 video,
-canvas,
-svg {
+canvas {
   display: block;
   max-width: 100%;
+}
+
+/* SVG standalone (illustrations, logos) — block layout */
+svg {
+  max-width: 100%;
+}
+
+/* SVG inside buttons/links stay inline so icons render next to text */
+button svg,
+a svg,
+span svg,
+[class*="adm-btn"] svg {
+  display: inline;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .page-container {
