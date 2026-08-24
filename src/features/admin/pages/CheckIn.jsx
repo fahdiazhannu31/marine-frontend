@@ -392,11 +392,7 @@ export default function CheckIn() {
       const qr = new Html5Qrcode("ci-qr-reader", { verbose: false });
       html5QrRef.current = qr;
 
-      const config = {
-        fps: 10,
-        qrbox: { width: 200, height: 200 },
-        aspectRatio: 1.0,
-      };
+      const config = { fps: 10, qrbox: { width: 200, height: 200 } };
       const onSuccess = (text) => {
         const now = Date.now();
         if (
@@ -408,35 +404,54 @@ export default function CheckIn() {
         playBeep("success");
         fetchAndCheckinRef.current?.(text, true);
       };
-      const onError = () => {};
 
-      // Try back camera first, fallback to any camera
+      // Strategy 1: enumerate cameras → use deviceId (most reliable on Android)
+      let started = false;
       try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          // Prefer back/rear camera label; fall back to last device
+          const backCam =
+            devices.find((d) => /back|rear|environment/i.test(d.label)) ||
+            devices[devices.length - 1];
+          await qr.start(backCam.id, config, onSuccess, () => {});
+          started = true;
+        }
+      } catch (_) {
+        /* getCameras not supported or permission not yet granted */
+      }
+
+      // Strategy 2: facingMode constraint
+      if (!started) {
         await qr.start(
           { facingMode: { ideal: "environment" } },
           config,
           onSuccess,
-          onError,
+          () => {},
         );
-      } catch (_) {
-        try {
-          await qr.start(
-            { facingMode: "environment" },
-            config,
-            onSuccess,
-            onError,
-          );
-        } catch (_2) {
-          // Last resort: let browser pick any camera
-          await qr.start({ facingMode: "user" }, config, onSuccess, onError);
-        }
       }
 
       setScannerReady(true);
     } catch (err) {
       console.error("Scanner failed:", err);
-      toast.error("Kamera tidak bisa diakses. Gunakan input manual.");
-      html5QrRef.current = null;
+      const msg = (err?.message || String(err)).toLowerCase();
+      if (/permission|denied|not allowed/i.test(msg)) {
+        toast.error(
+          "Izin kamera ditolak. Buka pengaturan browser → izinkan kamera untuk situs ini.",
+        );
+      } else if (/not found|no device|no camera/i.test(msg)) {
+        toast.error("Tidak ada kamera ditemukan di perangkat ini.");
+      } else {
+        toast.error(
+          `Kamera gagal: ${err?.message || err}. Gunakan input manual.`,
+        );
+      }
+      if (html5QrRef.current) {
+        try {
+          html5QrRef.current.clear();
+        } catch (_) {}
+        html5QrRef.current = null;
+      }
       setScannerActive(false);
     }
   }, []); // eslint-disable-line
