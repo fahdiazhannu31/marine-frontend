@@ -132,3 +132,17 @@ export async function fetchManifestFinal(uploadId) {
 export function getExportExcelUrl(uploadId) {
   return `${API_URL}${BASE}/export-excel/${uploadId}`;
 }
+
+// ── Crew check-ins for a schedule ────────────────────────────────────────────
+export async function fetchCrewCheckins(scheduleId) {
+  return api.get(`${BASE}/crew-checkins/${scheduleId}`, { auth: true });
+}
+
+// ── Switch seats between two passengers ──────────────────────────────────────
+export async function switchSeats(ticketAId, ticketBId) {
+  return api.post(
+    `${BASE}/tickets/switch-seat`,
+    { ticket_a_id: ticketAId, ticket_b_id: ticketBId },
+    { auth: true },
+  );
+}

@@ -15,6 +15,8 @@ import {
   updateBoatCrew,
   updateTicket,
   fetchAvailableSeats,
+  fetchCrewCheckins,
+  switchSeats,
 } from "../services/manifestUploadService.js";
 import { useToast } from "../ui/ToastContext.jsx";
 import { useConfirm } from "../ui/ConfirmContext.jsx";
@@ -39,6 +41,8 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  ArrowLeftRight,
+  Anchor,
 } from "lucide-react";
 
 function fmtDate(v) {
@@ -424,6 +428,277 @@ function TicketEditModal({
   );
 }
 
+// ── SwitchSeatModal ───────────────────────────────────────────────────────────
+// Let admin pick another ticket and swap their seats
+function SwitchSeatModal({ ticket, tickets, onClose, onSuccess }) {
+  const toast = useToast();
+  const [targetId, setTargetId] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const others = tickets.filter(
+    (t) => t.id !== ticket.id && parseInt(t.cancelled) !== 1 && t.seat_number, // only tickets that have a seat
+  );
+
+  const target = others.find((t) => String(t.id) === String(targetId));
+
+  const handleSwitch = async () => {
+    if (!targetId) {
+      toast.error("Pilih penumpang tujuan.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await switchSeats(ticket.id, parseInt(targetId));
+      toast.success(
+        `✓ Kursi ditukar: ${res.ticket_a.name} → ${res.ticket_a.new_seat} | ${res.ticket_b.name} → ${res.ticket_b.new_seat}`,
+      );
+      onSuccess();
+      onClose();
+    } catch (e) {
+      toast.error(e.message || "Gagal menukar kursi.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="adm-card"
+        style={{ maxWidth: 480, width: "90vw", padding: 24 }}
+      >
+        <h3 style={{ marginTop: 0 }}>
+          <ArrowLeftRight
+            size={16}
+            style={{ verticalAlign: "middle", marginRight: 8 }}
+          />
+          Switch Seat
+        </h3>
+
+        {/* Current ticket */}
+        <div
+          style={{
+            padding: "12px 14px",
+            borderRadius: 8,
+            background: "var(--adm-bg)",
+            border: "1px solid var(--adm-border)",
+            marginBottom: 16,
+            fontSize: 13,
+          }}
+        >
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>
+            {ticket.passenger_name}
+          </div>
+          <div style={{ color: "var(--adm-text-muted)" }}>
+            Kursi saat ini:{" "}
+            <strong style={{ color: "var(--adm-accent)" }}>
+              {ticket.seat_number || "Unassigned"}
+            </strong>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "4px 0 16px",
+            color: "var(--adm-text-faint)",
+          }}
+        >
+          <ArrowLeftRight size={18} />
+        </div>
+
+        {/* Target selector */}
+        <div className="adm-field">
+          <label>Tukar dengan penumpang:</label>
+          <select
+            value={targetId}
+            onChange={(e) => setTargetId(e.target.value)}
+          >
+            <option value="">— Pilih penumpang —</option>
+            {others.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.seat_number} — {t.passenger_name}
+                {t.group_name && t.group_name !== t.passenger_name
+                  ? ` (${t.group_name})`
+                  : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Preview */}
+        {target && (
+          <div
+            style={{
+              padding: "10px 14px",
+              borderRadius: 8,
+              marginTop: 8,
+              background: "#e8f5e9",
+              border: "1px solid #a5d6a7",
+              fontSize: 13,
+            }}
+          >
+            <strong>{ticket.passenger_name}</strong> ← {target.seat_number}
+            {" | "}
+            <strong>{target.passenger_name}</strong> ← {ticket.seat_number}
+          </div>
+        )}
+
+        <div className="adm-form-actions" style={{ marginTop: 20 }}>
+          <button className="adm-btn adm-btn-ghost" onClick={onClose}>
+            Batal
+          </button>
+          <button
+            className="adm-btn adm-btn-primary"
+            onClick={handleSwitch}
+            disabled={saving || !targetId}
+          >
+            {saving ? "Menukar…" : "Switch Kursi"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CrewCheckinPanel ──────────────────────────────────────────────────────────
+// Shows crew assigned to this schedule + their check-in status
+function CrewCheckinPanel({ scheduleId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const ROLE_COLORS = {
+    captain: "#1800AD",
+    abk: "#0064C8",
+    gro: "#009678",
+    staff: "#505050",
+    other: "#826428",
+  };
+  const roleLabel = (r) =>
+    ({
+      captain: "Captain",
+      abk: "ABK",
+      gro: "GRO",
+      staff: "Staff",
+      other: "Other",
+    })[r] ?? r;
+
+  useEffect(() => {
+    if (!scheduleId) {
+      setLoading(false);
+      return;
+    }
+    fetchCrewCheckins(scheduleId)
+      .then(setData)
+      .catch(() => setData(null))
+      .finally(() => setLoading(false));
+  }, [scheduleId]);
+
+  if (loading)
+    return (
+      <div className="adm-loading" style={{ padding: "12px 0" }}>
+        Loading crew…
+      </div>
+    );
+  if (!data || !data.crew?.length) return null;
+
+  const checkedIn = data.crew.filter((c) => c.checked_in).length;
+
+  return (
+    <div
+      style={{
+        marginTop: 20,
+        padding: "14px 18px",
+        border: "1px solid var(--adm-border)",
+        borderRadius: "var(--adm-radius-lg)",
+        background: "var(--adm-surface)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 12,
+        }}
+      >
+        <Anchor size={14} style={{ color: "var(--adm-text-muted)" }} />
+        <span style={{ fontWeight: 700, fontSize: 13 }}>Crew / ABK</span>
+        <span className="adm-badge adm-badge-success" style={{ marginLeft: 4 }}>
+          {checkedIn}/{data.crew.length} check-in
+        </span>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {data.crew.map((c) => {
+          const color = ROLE_COLORS[c.role] ?? "#888";
+          return (
+            <div
+              key={c.assignment_id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 12px",
+                border: `1px solid ${c.checked_in ? "#a5d6a7" : "var(--adm-border)"}`,
+                borderRadius: 999,
+                background: c.checked_in ? "#e8f5e9" : "var(--adm-bg)",
+                fontSize: 12,
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                  background: c.checked_in ? "#2e7d32" : "#ccc",
+                }}
+              />
+              <span style={{ fontWeight: 600 }}>{c.name}</span>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color,
+                  padding: "1px 6px",
+                  borderRadius: 4,
+                  background: `${color}18`,
+                }}
+              >
+                {roleLabel(c.role)}
+              </span>
+              {c.checked_in && c.checked_in_at && (
+                <span style={{ fontSize: 10, color: "#2e7d32" }}>
+                  {new Date(c.checked_in_at).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── TicketsPanel ──────────────────────────────────────────────────────────────
 function TicketsPanel({ tickets, upload, onRefresh }) {
   const toast = useToast();
@@ -431,6 +706,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const [search, setSearch] = useState(""); // debounced search value
   const [filter, setFilter] = useState("all");
   const [editingTicket, setEditingTicket] = useState(null);
+  const [switchingTicket, setSwitchingTicket] = useState(null);
   const [availableSeats, setAvailableSeats] = useState([]);
   const [highlightedGroup, setHighlightedGroup] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -612,6 +888,10 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         highlightedGroup={highlightedGroup}
         onClearHighlight={() => setHighlightedGroup(null)}
       />
+
+      {/* Crew check-in status for this schedule */}
+      <CrewCheckinPanel scheduleId={upload?.schedule_id} />
+
       <div
         style={{
           display: "flex",
@@ -931,15 +1211,27 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                     <button
                       className="adm-btn adm-btn-secondary adm-btn-sm"
                       onClick={() => openEditModal(t)}
+                      title="Edit ticket"
                     >
                       <Pencil size={13} />
                     </button>
                     <button
                       className="adm-btn adm-btn-secondary adm-btn-sm"
                       onClick={() => printOne(t.id)}
+                      title="Print boarding pass"
                     >
                       <Printer size={13} />
                     </button>
+                    {t.seat_number && !isCancelled(t) && (
+                      <button
+                        className="adm-btn adm-btn-secondary adm-btn-sm"
+                        onClick={() => setSwitchingTicket(t)}
+                        title="Switch seat dengan penumpang lain"
+                        style={{ color: "#7c3aed" }}
+                      >
+                        <ArrowLeftRight size={13} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -1011,6 +1303,18 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
           onSave={() => setEditingTicket(null)}
           onClose={() => setEditingTicket(null)}
           onRefresh={onRefresh}
+        />
+      )}
+
+      {switchingTicket && (
+        <SwitchSeatModal
+          ticket={switchingTicket}
+          tickets={tickets}
+          onClose={() => setSwitchingTicket(null)}
+          onSuccess={() => {
+            setSwitchingTicket(null);
+            onRefresh();
+          }}
         />
       )}
     </div>
