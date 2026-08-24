@@ -576,8 +576,10 @@ function SwitchSeatModal({ ticket, tickets, onClose, onSuccess }) {
 }
 
 // ── CrewCheckinPanel ──────────────────────────────────────────────────────────
-// Shows crew assigned to this schedule + their check-in status
-function CrewCheckinPanel({ scheduleId }) {
+// Shows crew assigned to this schedule + their check-in status.
+// Falls back to captain_name / abk_names from the upload record when no
+// formal crew assignments exist in the crew table.
+function CrewCheckinPanel({ scheduleId, captainName, abkNames }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -588,7 +590,7 @@ function CrewCheckinPanel({ scheduleId }) {
     staff: "#505050",
     other: "#826428",
   };
-  const roleLabel = (r) =>
+  const rlabel = (r) =>
     ({
       captain: "Captain",
       abk: "ABK",
@@ -598,25 +600,56 @@ function CrewCheckinPanel({ scheduleId }) {
     })[r] ?? r;
 
   useEffect(() => {
+    setLoading(true);
+    setData(null);
     if (!scheduleId) {
       setLoading(false);
       return;
     }
     fetchCrewCheckins(scheduleId)
       .then(setData)
-      .catch(() => setData(null))
+      .catch(() => setData({ crew: [] }))
       .finally(() => setLoading(false));
   }, [scheduleId]);
 
-  if (loading)
-    return (
-      <div className="adm-loading" style={{ padding: "12px 0" }}>
-        Loading crew…
-      </div>
-    );
-  if (!data || !data.crew?.length) return null;
+  // Fallback: parse captain_name + abk_names from upload record
+  const fallback = [];
+  if (captainName) {
+    fallback.push({
+      _key: "cap",
+      name: captainName,
+      role: "captain",
+      checked_in: false,
+      checked_in_at: null,
+    });
+  }
+  if (abkNames) {
+    let names = [];
+    try {
+      names = JSON.parse(abkNames);
+    } catch (_) {
+      names = abkNames
+        .split(/[\n,]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    names.forEach((n, i) => {
+      if (n)
+        fallback.push({
+          _key: `abk-${i}`,
+          name: n,
+          role: "abk",
+          checked_in: false,
+          checked_in_at: null,
+        });
+    });
+  }
 
-  const checkedIn = data.crew.filter((c) => c.checked_in).length;
+  const hasFormal = (data?.crew?.length ?? 0) > 0;
+  const crewList = hasFormal ? data.crew : fallback;
+  const checkedIn = crewList.filter((c) => c.checked_in).length;
+
+  if (!loading && !crewList.length) return null;
 
   return (
     <div
@@ -628,35 +661,56 @@ function CrewCheckinPanel({ scheduleId }) {
         background: "var(--adm-surface)",
       }}
     >
+      {/* Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: 10,
           marginBottom: 12,
+          flexWrap: "wrap",
         }}
       >
         <Anchor size={14} style={{ color: "var(--adm-text-muted)" }} />
         <span style={{ fontWeight: 700, fontSize: 13 }}>Crew / ABK</span>
-        <span className="adm-badge adm-badge-success" style={{ marginLeft: 4 }}>
-          {checkedIn}/{data.crew.length} check-in
-        </span>
+        {loading ? (
+          <span style={{ fontSize: 12, color: "var(--adm-text-muted)" }}>
+            Loading…
+          </span>
+        ) : hasFormal ? (
+          <span
+            className={`adm-badge ${checkedIn === crewList.length ? "adm-badge-success" : checkedIn > 0 ? "adm-badge-warning" : "adm-badge-neutral"}`}
+            style={{ marginLeft: 4 }}
+          >
+            {checkedIn}/{crewList.length} check-in
+          </span>
+        ) : (
+          <span
+            className="adm-badge adm-badge-neutral"
+            style={{ marginLeft: 4, fontSize: 10 }}
+          >
+            Data manifest · belum pakai modul Crew
+          </span>
+        )}
       </div>
 
+      {/* Crew pills */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {data.crew.map((c) => {
+        {crewList.map((c, idx) => {
           const color = ROLE_COLORS[c.role] ?? "#888";
+          const isIn = c.checked_in;
+          const key = c._key ?? c.crew_id ?? c.assignment_id ?? idx;
           return (
             <div
-              key={c.assignment_id}
+              key={key}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
                 padding: "6px 12px",
-                border: `1px solid ${c.checked_in ? "#a5d6a7" : "var(--adm-border)"}`,
+                border: `1px solid ${isIn ? "#a5d6a7" : "var(--adm-border)"}`,
                 borderRadius: 999,
-                background: c.checked_in ? "#e8f5e9" : "var(--adm-bg)",
+                background: isIn ? "#e8f5e9" : "var(--adm-bg)",
                 fontSize: 12,
               }}
             >
@@ -666,7 +720,8 @@ function CrewCheckinPanel({ scheduleId }) {
                   height: 8,
                   borderRadius: "50%",
                   flexShrink: 0,
-                  background: c.checked_in ? "#2e7d32" : "#ccc",
+                  background: isIn ? "#2e7d32" : "#ccc",
+                  boxShadow: isIn ? "0 0 4px rgba(46,125,50,.5)" : "none",
                 }}
               />
               <span style={{ fontWeight: 600 }}>{c.name}</span>
@@ -681,9 +736,9 @@ function CrewCheckinPanel({ scheduleId }) {
                   background: `${color}18`,
                 }}
               >
-                {roleLabel(c.role)}
+                {rlabel(c.role)}
               </span>
-              {c.checked_in && c.checked_in_at && (
+              {isIn && c.checked_in_at && (
                 <span style={{ fontSize: 10, color: "#2e7d32" }}>
                   {new Date(c.checked_in_at).toLocaleTimeString("id-ID", {
                     hour: "2-digit",
@@ -691,10 +746,26 @@ function CrewCheckinPanel({ scheduleId }) {
                   })}
                 </span>
               )}
+              {!isIn && hasFormal && (
+                <span style={{ fontSize: 10, color: "#999" }}>belum</span>
+              )}
             </div>
           );
         })}
       </div>
+
+      {!hasFormal && fallback.length > 0 && (
+        <p
+          style={{
+            margin: "10px 0 0",
+            fontSize: 11,
+            color: "var(--adm-text-faint)",
+          }}
+        >
+          Tambahkan crew di halaman <strong>Crew Management</strong> dan assign
+          ke schedule ini untuk check-in real-time.
+        </p>
+      )}
     </div>
   );
 }
@@ -890,7 +961,12 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
       />
 
       {/* Crew check-in status for this schedule */}
-      <CrewCheckinPanel scheduleId={upload?.schedule_id} />
+      <CrewCheckinPanel
+        scheduleId={upload?.schedule_id}
+        tripDate={upload?.trip_date}
+        captainName={upload?.captain_name}
+        abkNames={upload?.abk_names}
+      />
 
       <div
         style={{
