@@ -1031,10 +1031,15 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             Overnight BP ({overnightIds.length} pax)
           </button>
         )}
-        <span style={{ fontSize: 11, color: "var(--adm-text-faint)", marginLeft: 4 }}>
+        <span
+          style={{
+            fontSize: 11,
+            color: "var(--adm-text-faint)",
+            marginLeft: 4,
+          }}
+        >
           — or click <Printer size={11} style={{ verticalAlign: "middle" }} />{" "}
           on any row
-        </span>          on any row
         </span>
       </div>
       <div
