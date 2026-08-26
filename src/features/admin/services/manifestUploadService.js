@@ -125,8 +125,8 @@ export async function fetchAvailableSeats(uploadId) {
 }
 
 // ── Manifest Final & Export ──────────────────────────────────────────────────
-export async function fetchManifestFinal(uploadId) {
-  return api.get(`${BASE}/final/${uploadId}`, { auth: true });
+export async function fetchManifestFinal(uploadId, view = "departure") {
+  return api.get(`${BASE}/final/${uploadId}?view=${view}`, { auth: true });
 }
 
 export function getExportExcelUrl(uploadId) {

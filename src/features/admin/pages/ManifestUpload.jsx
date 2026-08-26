@@ -863,6 +863,16 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
       "_blank",
     );
 
+  // Return boarding pass — only overnight tickets
+  const overnightIds = tickets
+    .filter(
+      (t) =>
+        (t.ket || "").toUpperCase().includes("OVERNIGHT") && !isCancelled(t),
+    )
+    .map((t) => t.id);
+  const printReturnBp = () =>
+    window.open(`${bpBase}?ticket_ids=${overnightIds.join(",")}`, "_blank");
+
   // Per-ket counts from actual ticket data
   const ketCount = (ket) =>
     tickets.filter(
@@ -1009,15 +1019,22 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             Filtered ({filtered.length} pax)
           </button>
         )}
-        <span
-          style={{
-            fontSize: 11,
-            color: "var(--adm-text-faint)",
-            marginLeft: 4,
-          }}
-        >
+        {/* Return boarding pass — only for overnight passengers (includes 2nd return page) */}
+        {overnightIds.length > 0 && (
+          <button
+            className="adm-btn adm-btn-sm"
+            style={{ background: "#1800AD", color: "#fff", border: "none" }}
+            onClick={printReturnBp}
+            title="Print boarding pass untuk penumpang overnight (2 halaman: berangkat + pulang)"
+          >
+            <Moon size={12} style={{ marginRight: 4 }} />
+            Overnight BP ({overnightIds.length} pax)
+          </button>
+        )}
+        <span style={{ fontSize: 11, color: "var(--adm-text-faint)", marginLeft: 4 }}>
           — or click <Printer size={11} style={{ verticalAlign: "middle" }} />{" "}
           on any row
+        </span>          on any row
         </span>
       </div>
       <div

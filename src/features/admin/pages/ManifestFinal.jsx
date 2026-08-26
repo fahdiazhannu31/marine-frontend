@@ -7,7 +7,7 @@ import {
 import { useToast } from "../ui/ToastContext.jsx";
 import { API_URL } from "../../../config/BaseUrl.js";
 import { getToken } from "../../../services/api.js";
-import { Printer, FileSpreadsheet } from "lucide-react";
+import { Printer, FileSpreadsheet, Moon, Sun } from "lucide-react";
 
 // ── Boat brand colors ────────────────────────────────────────────────────────
 const BOAT_COLORS = [
@@ -199,6 +199,7 @@ export default function ManifestFinal() {
   const [loadingUploads, setLoadingUploads] = useState(true);
   const [showSeats, setShowSeats] = useState(false);
   const [printMode, setPrintMode] = useState(false);
+  const [viewMode, setViewMode] = useState("departure"); // "departure" | "return"
 
   useEffect(() => {
     fetchUploads()
@@ -208,12 +209,12 @@ export default function ManifestFinal() {
   }, []);
 
   const loadFinal = useCallback(
-    async (id) => {
+    async (id, view = viewMode) => {
       if (!id) return;
       setLoading(true);
       setData(null);
       try {
-        const res = await fetchManifestFinal(id);
+        const res = await fetchManifestFinal(id, view);
         setData(res);
       } catch (e) {
         toast.error(e.message || "Gagal memuat manifest final.");
@@ -221,12 +222,12 @@ export default function ManifestFinal() {
         setLoading(false);
       }
     },
-    [toast],
+    [toast, viewMode],
   );
 
   useEffect(() => {
-    if (selectedId) loadFinal(selectedId);
-  }, [selectedId, loadFinal]);
+    if (selectedId) loadFinal(selectedId, viewMode);
+  }, [selectedId, viewMode]);
 
   const handleExport = async () => {
     if (!selectedId) return;
@@ -285,24 +286,80 @@ export default function ManifestFinal() {
           <h1>📋 Manifest Final</h1>
           <p>Tampilkan dan ekspor manifest penumpang dalam format final.</p>
         </div>
-        {data && (
-          <div style={{ display: "flex", gap: 10 }}>
-            <button className="adm-btn adm-btn-secondary" onClick={handlePrint}>
-              <Printer
-                size={14}
-                style={{ marginRight: 6, verticalAlign: "middle" }}
-              />
-              Print
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          {/* View toggle: departure / return */}
+          <div
+            style={{
+              display: "flex",
+              background: "#f1f2f4",
+              padding: 4,
+              borderRadius: 8,
+              gap: 4,
+            }}
+          >
+            <button
+              className={`adm-btn adm-btn-sm ${viewMode === "departure" ? "adm-btn-primary" : ""}`}
+              style={
+                viewMode !== "departure"
+                  ? {
+                      background: "transparent",
+                      color: "var(--adm-text-muted)",
+                    }
+                  : {}
+              }
+              onClick={() => setViewMode("departure")}
+            >
+              <Sun size={13} style={{ marginRight: 4 }} /> Keberangkatan
             </button>
-            <button className="adm-btn adm-btn-success" onClick={handleExport}>
-              <FileSpreadsheet
-                size={14}
-                style={{ marginRight: 6, verticalAlign: "middle" }}
-              />
-              Export Excel (.xlsx)
+            <button
+              className={`adm-btn adm-btn-sm ${viewMode === "return" ? "adm-btn-primary" : ""}`}
+              style={
+                viewMode !== "return"
+                  ? {
+                      background: "transparent",
+                      color: "var(--adm-text-muted)",
+                    }
+                  : { background: "#1800AD" }
+              }
+              onClick={() => setViewMode("return")}
+            >
+              <Moon size={13} style={{ marginRight: 4 }} /> Kepulangan
+              (Overnight)
             </button>
           </div>
-        )}
+
+          {data && (
+            <>
+              <button
+                className="adm-btn adm-btn-secondary"
+                onClick={handlePrint}
+              >
+                <Printer
+                  size={14}
+                  style={{ marginRight: 6, verticalAlign: "middle" }}
+                />
+                Print
+              </button>
+              <button
+                className="adm-btn adm-btn-success"
+                onClick={handleExport}
+              >
+                <FileSpreadsheet
+                  size={14}
+                  style={{ marginRight: 6, verticalAlign: "middle" }}
+                />
+                Export Excel (.xlsx)
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* ── Upload selector ─────────────────────────────────────── */}
@@ -418,7 +475,11 @@ export default function ManifestFinal() {
               }}
             >
               MANIFEST PENUMPANG{" "}
-              {upload.direction === "RETURN" ? "KEPULANGAN" : "KEBERANGKATAN"}
+              {viewMode === "return"
+                ? "KEPULANGAN (OVERNIGHT)"
+                : upload.direction === "RETURN"
+                  ? "KEPULANGAN"
+                  : "KEBERANGKATAN"}
             </div>
             <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 16 }}>
               {fmtDate(upload.trip_date)}
