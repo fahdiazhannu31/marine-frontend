@@ -223,13 +223,15 @@ function ResultCard({
 }) {
   if (!result) return null;
 
-  const { group_name, tickets, boat_name, trip_date, direction } = result;
+  const { group_name, tickets, boat_name, trip_date, direction, is_return } =
+    result;
   const scanned = tickets.find((t) => Number(t.id) === scannedId);
   const total = tickets.length;
   const checkedIn = tickets.filter((t) => parseInt(t.checked_in) === 1).length;
   const cancelled = tickets.filter((t) => parseInt(t.cancelled) === 1).length;
   const pending = total - checkedIn - cancelled;
-  const allDone = pending === 0;
+  // For return boarding pass: departure check-in is already done, show as "all done"
+  const allDone = is_return ? true : pending === 0;
 
   const isIn = (t) => parseInt(t.checked_in) === 1;
   const isCan = (t) => parseInt(t.cancelled) === 1;
@@ -253,11 +255,13 @@ function ResultCard({
           </div>
           <div className="ci-scanned-info">
             <div className="ci-scanned-label">
-              {isIn(scanned)
-                ? "✓ Sudah Check-In"
-                : isCan(scanned)
-                  ? "✕ Tiket Dibatalkan"
-                  : "Tiket Ditemukan"}
+              {is_return
+                ? "🌙 Return Boarding Pass"
+                : isIn(scanned)
+                  ? "✓ Sudah Check-In"
+                  : isCan(scanned)
+                    ? "✕ Tiket Dibatalkan"
+                    : "Tiket Ditemukan"}
             </div>
             <div className="ci-scanned-name">{scanned.passenger_name}</div>
             <div className="ci-scanned-meta">
@@ -280,6 +284,22 @@ function ResultCard({
         <span>
           Grup: <strong>{group_name}</strong>
         </span>
+        {is_return && (
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: "#1800AD",
+              color: "#fff",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
+            🌙 RETURN
+          </span>
+        )}
         <span className="ci-group-date">{fmtDate(trip_date)}</span>
       </div>
 
@@ -501,6 +521,15 @@ export default function CheckIn() {
         ? Number(data.scanned_ticket_id)
         : null;
       setScannedId(sid);
+
+      // For return boarding pass: departure already happened → don't auto-checkin again
+      // Just show confirmation that this is a valid return ticket
+      if (data.is_return) {
+        setResult(data);
+        toast.info(`🌙 Return boarding pass valid — ${data.group_name}`);
+        dismissTimerRef.current = setTimeout(() => setResult(null), 8000);
+        return;
+      }
 
       if (autoCheckin && sid) {
         const ticket = data.tickets.find((t) => Number(t.id) === sid);
