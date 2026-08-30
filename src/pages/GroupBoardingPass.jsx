@@ -39,10 +39,9 @@ export default function GroupBoardingPass() {
 
   const handlePrint = (ticket) => {
     setPrinting(ticket.id);
-    const url = ticket.boarding_pass_url;
-    // Open PDF in new tab — browser will render or prompt download
-    window.open(url, "_blank", "noopener");
-    setTimeout(() => setPrinting(null), 2000);
+    // boarding_pass_url already points to public endpoint — no auth needed
+    window.open(ticket.boarding_pass_url, "_blank", "noopener");
+    setTimeout(() => setPrinting(null), 2500);
   };
 
   const handlePrintAll = () => {
@@ -50,7 +49,7 @@ export default function GroupBoardingPass() {
     data.tickets.forEach((t, i) => {
       setTimeout(
         () => window.open(t.boarding_pass_url, "_blank", "noopener"),
-        i * 400,
+        i * 500,
       );
     });
   };
@@ -58,10 +57,13 @@ export default function GroupBoardingPass() {
   // ── Loading ──────────────────────────────────────────────────────────
   if (loading)
     return (
-      <div style={styles.center}>
-        <div style={styles.spinner} />
-        <p style={{ color: "#888", marginTop: 16 }}>Memuat boarding pass…</p>
-      </div>
+      <>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={styles.center}>
+          <div style={styles.spinner} />
+          <p style={{ color: "#888", marginTop: 16 }}>Memuat boarding pass…</p>
+        </div>
+      </>
     );
 
   // ── Error ────────────────────────────────────────────────────────────
@@ -81,6 +83,7 @@ export default function GroupBoardingPass() {
   // ── Success ──────────────────────────────────────────────────────────
   return (
     <div style={styles.page}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerLogo}>⚓</div>
@@ -168,7 +171,13 @@ export default function GroupBoardingPass() {
               onClick={() => handlePrint(t)}
               disabled={printing === t.id}
             >
-              {printing === t.id ? "⏳ Membuka…" : "🎫 Cetak BP"}
+              {printing === t.id ? (
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={styles.miniSpinner} /> Membuka…
+                </span>
+              ) : (
+                "🎫 Unduh Boarding Pass"
+              )}
             </button>
           </div>
         ))}
@@ -382,6 +391,16 @@ const styles = {
     fontWeight: 700,
     cursor: "not-allowed",
     whiteSpace: "nowrap",
+    flexShrink: 0,
+  },
+  miniSpinner: {
+    display: "inline-block",
+    width: 12,
+    height: 12,
+    border: "2px solid #ddd",
+    borderTop: "2px solid #F2881C",
+    borderRadius: "50%",
+    animation: "spin 0.7s linear infinite",
     flexShrink: 0,
   },
   footer: {
