@@ -14,15 +14,19 @@ function fmtDate(v) {
 
 export default function GroupBoardingPass() {
   const { token } = useParams();
-  const [data, setData]       = useState(null);
-  const [error, setError]     = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [printing, setPrinting] = useState(null); // ticket id being printed
 
   useEffect(() => {
-    if (!token) { setError("Token tidak valid."); setLoading(false); return; }
+    if (!token) {
+      setError("Token tidak valid.");
+      setLoading(false);
+      return;
+    }
 
-    fetch(`${API_URL}/api/group-boarding-pass/${encodeURIComponent(token)}`)
+    fetch(`${API_URL}/api/group-boarding-pass/${token}`)
       .then((r) => r.json())
       .then((json) => {
         if (json.error) throw new Error(json.error);
@@ -43,28 +47,35 @@ export default function GroupBoardingPass() {
   const handlePrintAll = () => {
     if (!data) return;
     data.tickets.forEach((t, i) => {
-      setTimeout(() => window.open(t.boarding_pass_url, "_blank", "noopener"), i * 400);
+      setTimeout(
+        () => window.open(t.boarding_pass_url, "_blank", "noopener"),
+        i * 400,
+      );
     });
   };
 
   // ── Loading ──────────────────────────────────────────────────────────
-  if (loading) return (
-    <div style={styles.center}>
-      <div style={styles.spinner} />
-      <p style={{ color: "#888", marginTop: 16 }}>Memuat boarding pass…</p>
-    </div>
-  );
+  if (loading)
+    return (
+      <div style={styles.center}>
+        <div style={styles.spinner} />
+        <p style={{ color: "#888", marginTop: 16 }}>Memuat boarding pass…</p>
+      </div>
+    );
 
   // ── Error ────────────────────────────────────────────────────────────
-  if (error) return (
-    <div style={styles.center}>
-      <div style={styles.errorBox}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>⚠️</div>
-        <h2 style={{ color: "#c0392b", margin: "0 0 8px" }}>Link Tidak Valid</h2>
-        <p style={{ color: "#666", margin: 0 }}>{error}</p>
+  if (error)
+    return (
+      <div style={styles.center}>
+        <div style={styles.errorBox}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>⚠️</div>
+          <h2 style={{ color: "#c0392b", margin: "0 0 8px" }}>
+            Link Tidak Valid
+          </h2>
+          <p style={{ color: "#666", margin: 0 }}>{error}</p>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   // ── Success ──────────────────────────────────────────────────────────
   return (
@@ -91,15 +102,21 @@ export default function GroupBoardingPass() {
           </div>
           <div style={styles.tripItem}>
             <span style={styles.tripLabel}>Rute</span>
-            <span style={styles.tripValue}>{data.origin} → {data.destination}</span>
+            <span style={styles.tripValue}>
+              {data.origin} → {data.destination}
+            </span>
           </div>
         </div>
 
         <div style={styles.groupBadge}>
           <span style={{ fontSize: 18, marginRight: 8 }}>👥</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{data.group_name}</div>
-            <div style={{ fontSize: 13, color: "#666" }}>{data.total} penumpang</div>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>
+              {data.group_name}
+            </div>
+            <div style={{ fontSize: 13, color: "#666" }}>
+              {data.total} penumpang
+            </div>
           </div>
         </div>
       </div>
@@ -126,11 +143,17 @@ export default function GroupBoardingPass() {
                   {t.seat_number && (
                     <span style={styles.seatBadge}>Kursi {t.seat_number}</span>
                   )}
-                  <span style={{
-                    ...styles.ketBadge,
-                    background: t.ket?.includes("OVERNIGHT") ? "#1800AD15" : "#F2881C15",
-                    color: t.ket?.includes("OVERNIGHT") ? "#1800AD" : "#c96a00",
-                  }}>
+                  <span
+                    style={{
+                      ...styles.ketBadge,
+                      background: t.ket?.includes("OVERNIGHT")
+                        ? "#1800AD15"
+                        : "#F2881C15",
+                      color: t.ket?.includes("OVERNIGHT")
+                        ? "#1800AD"
+                        : "#c96a00",
+                    }}
+                  >
                     {t.ket === "OVERNIGHT" ? "🌙 Menginap" : "☀️ Day Trip"}
                   </span>
                   <span style={styles.ticketCode}>{t.ticket_code}</span>
@@ -138,7 +161,9 @@ export default function GroupBoardingPass() {
               </div>
             </div>
             <button
-              style={printing === t.id ? styles.btnPrintingActive : styles.btnPrint}
+              style={
+                printing === t.id ? styles.btnPrintingActive : styles.btnPrint
+              }
               onClick={() => handlePrint(t)}
               disabled={printing === t.id}
             >
