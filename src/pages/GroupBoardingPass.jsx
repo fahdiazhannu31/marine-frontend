@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { API_URL } from "../config/BaseUrl.js";
 
 function fmtDate(v) {
@@ -13,11 +13,12 @@ function fmtDate(v) {
 }
 
 export default function GroupBoardingPass() {
-  const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("t") ?? "";
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [printing, setPrinting] = useState(null); // ticket id being printed
+  const [printing, setPrinting] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -26,7 +27,7 @@ export default function GroupBoardingPass() {
       return;
     }
 
-    fetch(`${API_URL}/api/group-boarding-pass/${token}`)
+    fetch(`${API_URL}/api/group-boarding-pass?t=${token}`)
       .then((r) => r.json())
       .then((json) => {
         if (json.error) throw new Error(json.error);

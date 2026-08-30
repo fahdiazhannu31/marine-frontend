@@ -64,10 +64,7 @@ function App() {
             <Route path="/payment-failure" element={<PaymentFailure />} />
 
             {/* ── Public (no auth) — Group Boarding Pass self-service ── */}
-            <Route
-              path="/boarding-pass/:token"
-              element={<GroupBoardingPass />}
-            />
+            <Route path="/boarding-pass" element={<GroupBoardingPass />} />
 
             {/* ── Admin Routes ─────────────────────────────────── */}
             <Route
