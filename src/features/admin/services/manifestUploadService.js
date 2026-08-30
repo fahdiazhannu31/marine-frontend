@@ -146,3 +146,12 @@ export async function switchSeats(ticketAId, ticketBId) {
     { auth: true },
   );
 }
+
+// ── Send group QR emails ─────────────────────────────────────────────────────
+export async function sendGroupQrEmails(uploadId, groupEmails = {}) {
+  return api.post(
+    `${BASE}/send-group-qr-emails`,
+    { upload_id: uploadId, group_emails: groupEmails },
+    { auth: true },
+  );
+}

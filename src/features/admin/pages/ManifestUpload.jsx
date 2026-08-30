@@ -17,6 +17,7 @@ import {
   fetchAvailableSeats,
   fetchCrewCheckins,
   switchSeats,
+  sendGroupQrEmails,
 } from "../services/manifestUploadService.js";
 import { useToast } from "../ui/ToastContext.jsx";
 import { useConfirm } from "../ui/ConfirmContext.jsx";
@@ -781,6 +782,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const [availableSeats, setAvailableSeats] = useState([]);
   const [highlightedGroup, setHighlightedGroup] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sendingEmails, setSendingEmails] = useState(false);
   const itemsPerPage = 20;
 
   // Debounce search input (300ms delay)
@@ -880,6 +882,28 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         (t.ket || "").toUpperCase().includes(ket.toUpperCase()) &&
         !isCancelled(t),
     ).length;
+
+  // Send group QR emails
+  const handleSendGroupQrEmails = async () => {
+    setSendingEmails(true);
+    try {
+      // For now, send without group_emails (backend will log warning)
+      // TODO: collect emails from booking system or prompt user
+      const result = await sendGroupQrEmails(upload.id, {});
+      toast.success(
+        `✉️ Sent ${result.sent_count} emails to ${result.total_groups} groups`,
+      );
+      if (result.failed_groups.length > 0) {
+        toast.warning(
+          `Gagal ${result.failed_groups.length}: ${result.failed_groups.join(", ")}`,
+        );
+      }
+    } catch (e) {
+      toast.error("Failed to send emails: " + e.message);
+    } finally {
+      setSendingEmails(false);
+    }
+  };
 
   // KET badge styling
   const ketBadgeStyle = (ket) => {
@@ -1029,6 +1053,28 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
           >
             <Moon size={12} style={{ marginRight: 4 }} />
             Overnight BP ({overnightIds.length} pax)
+          </button>
+        )}
+        {/* Send all group QR codes via email */}
+        {upload && (
+          <button
+            className="adm-btn adm-btn-sm"
+            style={{
+              background: "#4CAF50",
+              color: "#fff",
+              border: "none",
+            }}
+            onClick={handleSendGroupQrEmails}
+            disabled={sendingEmails}
+            title="Blast email group QR codes to all groups"
+          >
+            {sendingEmails ? (
+              <>
+                <span style={{ marginRight: 4 }}>⏳ Sending…</span>
+              </>
+            ) : (
+              <>📧 Send All Group QR</>
+            )}
           </button>
         )}
         <span
