@@ -155,3 +155,8 @@ export async function sendGroupQrEmails(uploadId, groupEmails = {}) {
     { auth: true },
   );
 }
+
+// ── Get group QR codes for viewing ───────────────────────────────────────────
+export async function fetchGroupQrCodes(uploadId) {
+  return api.get(`${BASE}/group-qr-codes/${uploadId}`, { auth: true });
+}

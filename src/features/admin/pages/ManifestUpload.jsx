@@ -18,6 +18,7 @@ import {
   fetchCrewCheckins,
   switchSeats,
   sendGroupQrEmails,
+  fetchGroupQrCodes,
 } from "../services/manifestUploadService.js";
 import { useToast } from "../ui/ToastContext.jsx";
 import { useConfirm } from "../ui/ConfirmContext.jsx";
@@ -783,6 +784,9 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const [highlightedGroup, setHighlightedGroup] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sendingEmails, setSendingEmails] = useState(false);
+  const [showingQrCodes, setShowingQrCodes] = useState(false);
+  const [qrCodesData, setQrCodesData] = useState(null);
+  const [loadingQrCodes, setLoadingQrCodes] = useState(false);
   const itemsPerPage = 20;
 
   // Debounce search input (300ms delay)
@@ -903,6 +907,28 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
     } finally {
       setSendingEmails(false);
     }
+  };
+
+  // View group QR codes
+  const handleViewGroupQrCodes = async () => {
+    setLoadingQrCodes(true);
+    try {
+      const data = await fetchGroupQrCodes(upload.id);
+      setQrCodesData(data);
+      setShowingQrCodes(true);
+    } catch (e) {
+      toast.error("Failed to load QR codes: " + e.message);
+    } finally {
+      setLoadingQrCodes(false);
+    }
+  };
+
+  // Download QR as PNG (use data URL)
+  const downloadQrCode = (groupName, qrDataUrl) => {
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = `qr-${groupName.replace(/\s+/g, "-")}.png`;
+    link.click();
   };
 
   // KET badge styling
@@ -1057,25 +1083,46 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         )}
         {/* Send all group QR codes via email */}
         {upload && (
-          <button
-            className="adm-btn adm-btn-sm"
-            style={{
-              background: "#4CAF50",
-              color: "#fff",
-              border: "none",
-            }}
-            onClick={handleSendGroupQrEmails}
-            disabled={sendingEmails}
-            title="Blast email group QR codes to all groups"
-          >
-            {sendingEmails ? (
-              <>
-                <span style={{ marginRight: 4 }}>⏳ Sending…</span>
-              </>
-            ) : (
-              <>📧 Send All Group QR</>
-            )}
-          </button>
+          <>
+            <button
+              className="adm-btn adm-btn-sm"
+              style={{
+                background: "#2196F3",
+                color: "#fff",
+                border: "none",
+              }}
+              onClick={handleViewGroupQrCodes}
+              disabled={loadingQrCodes}
+              title="View all group QR codes"
+            >
+              {loadingQrCodes ? (
+                <>
+                  <span style={{ marginRight: 4 }}>⏳ Loading…</span>
+                </>
+              ) : (
+                <>👁️ View QR Codes</>
+              )}
+            </button>
+            <button
+              className="adm-btn adm-btn-sm"
+              style={{
+                background: "#4CAF50",
+                color: "#fff",
+                border: "none",
+              }}
+              onClick={handleSendGroupQrEmails}
+              disabled={sendingEmails}
+              title="Blast email group QR codes to all groups"
+            >
+              {sendingEmails ? (
+                <>
+                  <span style={{ marginRight: 4 }}>⏳ Sending…</span>
+                </>
+              ) : (
+                <>📧 Send All Group QR</>
+              )}
+            </button>
+          </>
         )}
         <span
           style={{
@@ -1460,6 +1507,144 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             onRefresh();
           }}
         />
+      )}
+
+      {/* QR Codes Viewer Modal */}
+      {showingQrCodes && qrCodesData && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: 20,
+          }}
+          onClick={() => setShowingQrCodes(false)}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "var(--adm-radius)",
+              padding: 24,
+              maxWidth: 900,
+              maxHeight: "90vh",
+              overflow: "auto",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+                paddingBottom: 12,
+                borderBottom: "1px solid var(--adm-border)",
+              }}
+            >
+              <h3 style={{ margin: 0 }}>👁️ Group QR Codes</h3>
+              <button
+                onClick={() => setShowingQrCodes(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  fontSize: 24,
+                  cursor: "pointer",
+                  color: "var(--adm-text-muted)",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                fontSize: 13,
+                color: "var(--adm-text-muted)",
+                marginBottom: 16,
+              }}
+            >
+              <p>
+                <strong>Boat:</strong> {qrCodesData.boat_name}
+              </p>
+              <p>
+                <strong>Route:</strong> {qrCodesData.origin} →{" "}
+                {qrCodesData.destination}
+              </p>
+              <p>
+                <strong>Date:</strong> {qrCodesData.trip_date}
+              </p>
+              <p>
+                <strong>Total Groups:</strong> {qrCodesData.total_groups}
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                gap: 16,
+              }}
+            >
+              {qrCodesData.groups.map((group) => (
+                <div
+                  key={group.group_name}
+                  style={{
+                    border: "1px solid var(--adm-border)",
+                    borderRadius: "var(--adm-radius-sm)",
+                    padding: 16,
+                    textAlign: "center",
+                    background: "var(--adm-bg)",
+                  }}
+                >
+                  <div style={{ marginBottom: 12 }}>
+                    <h4 style={{ margin: "0 0 4px" }}>{group.group_name}</h4>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--adm-text-muted)",
+                      }}
+                    >
+                      {group.member_count} pax
+                    </div>
+                  </div>
+
+                  {group.qr_data_url && (
+                    <div style={{ marginBottom: 12 }}>
+                      <img
+                        src={group.qr_data_url}
+                        alt={`QR for ${group.group_name}`}
+                        style={{
+                          maxWidth: "100%",
+                          height: "auto",
+                          border: "1px solid var(--adm-border-strong)",
+                          borderRadius: 4,
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    onClick={() =>
+                      downloadQrCode(group.group_name, group.qr_data_url)
+                    }
+                    style={{ width: "100%" }}
+                  >
+                    ⬇️ Download PNG
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
