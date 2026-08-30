@@ -5,6 +5,7 @@ import Login from "./features/auth/Login.jsx";
 
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentFailure from "./pages/PaymentFailure.jsx";
+import GroupBoardingPass from "./pages/GroupBoardingPass.jsx";
 
 import AdminLayout from "./features/admin/AdminLayout.jsx";
 import YachtSeatBooking from "./features/admin/pages/YachtSeatBooking.jsx";
@@ -61,6 +62,12 @@ function App() {
 
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-failure" element={<PaymentFailure />} />
+
+            {/* ── Public (no auth) — Group Boarding Pass self-service ── */}
+            <Route
+              path="/boarding-pass/:token"
+              element={<GroupBoardingPass />}
+            />
 
             {/* ── Admin Routes ─────────────────────────────────── */}
             <Route
