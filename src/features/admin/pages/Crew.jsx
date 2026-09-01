@@ -1281,7 +1281,6 @@ export default function Crew() {
                   <th>HP</th>
                   <th>NIK / ID</th>
                   <th>QR Code</th>
-                  <th>Check-in Hari Ini</th>
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -1336,23 +1335,6 @@ export default function Crew() {
                       >
                         {c.qr_code}
                       </code>
-                    </td>
-                    <td>
-                      {c.checked_in_today ? (
-                        <span className="adm-badge adm-badge-success">
-                          <Check size={11} style={{ marginRight: 4 }} />
-                          {c.checked_in_at
-                            ? new Date(c.checked_in_at).toLocaleTimeString(
-                                "id-ID",
-                                { hour: "2-digit", minute: "2-digit" },
-                              )
-                            : "In"}
-                        </span>
-                      ) : (
-                        <span className="adm-badge adm-badge-neutral">
-                          Belum
-                        </span>
-                      )}
                     </td>
                     <td>
                       <span
