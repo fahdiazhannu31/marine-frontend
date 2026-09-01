@@ -581,7 +581,13 @@ function SwitchSeatModal({ ticket, tickets, onClose, onSuccess }) {
 // Shows crew assigned to this schedule + their check-in status.
 // Falls back to captain_name / abk_names from the upload record when no
 // formal crew assignments exist in the crew table.
-function CrewCheckinPanel({ scheduleId, tripDate, captainName, abkNames }) {
+function CrewCheckinPanel({
+  scheduleId,
+  tripDate,
+  captainName,
+  abkNames,
+  groName,
+}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -649,6 +655,28 @@ function CrewCheckinPanel({ scheduleId, tripDate, captainName, abkNames }) {
 
   const hasFormal = (data?.crew?.length ?? 0) > 0;
   const crewList = hasFormal ? data.crew : fallback;
+
+  // Add GRO to fallback if not covered by formal crew
+  const groInFormal = hasFormal && data.crew.some((c) => c.role === "gro");
+  if (!hasFormal || !groInFormal) {
+    if (groName) {
+      const names = groName
+        .split(/[\n,]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      names.forEach((n, i) => {
+        if (n && !crewList.find((c) => c.name === n)) {
+          crewList.push({
+            _key: `gro-${i}`,
+            name: n,
+            role: "gro",
+            checked_in: false,
+            checked_in_at: null,
+          });
+        }
+      });
+    }
+  }
   const checkedIn = crewList.filter((c) => c.checked_in).length;
 
   if (!loading && !crewList.length) return null;
@@ -1026,6 +1054,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         tripDate={upload?.trip_date}
         captainName={upload?.captain_name}
         abkNames={upload?.abk_names}
+        groName={upload?.gro_name}
       />
 
       <div
