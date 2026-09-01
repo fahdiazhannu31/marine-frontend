@@ -1969,6 +1969,22 @@ function UploadForm({ schedules, onSuccess }) {
         parts.push(`${res.origin} → ${res.destination}`);
       if (res.captain_name) parts.push(`Nahkoda: ${res.captain_name}`);
       toast.success(`Uploaded: ${parts.join(" · ")}.`);
+
+      // Show captain auto-assign result
+      const ca = res.captain_assign;
+      if (ca) {
+        if (ca.status === "assigned") {
+          toast.success(
+            `⚓ Captain ${ca.captain_name} berhasil di-assign ke schedule.`,
+          );
+        } else if (ca.status === "already_assigned") {
+          toast.info(
+            `⚓ Captain ${ca.captain_name} sudah di-assign sebelumnya.`,
+          );
+        } else if (ca.status === "not_found") {
+          toast.error(`⚠️ ${ca.message}`);
+        }
+      }
       if (fileRef.current) fileRef.current.value = "";
       setFile(null);
       onSuccess(res.upload_id);
