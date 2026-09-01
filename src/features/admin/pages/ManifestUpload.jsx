@@ -581,7 +581,7 @@ function SwitchSeatModal({ ticket, tickets, onClose, onSuccess }) {
 // Shows crew assigned to this schedule + their check-in status.
 // Falls back to captain_name / abk_names from the upload record when no
 // formal crew assignments exist in the crew table.
-function CrewCheckinPanel({ scheduleId, captainName, abkNames }) {
+function CrewCheckinPanel({ scheduleId, tripDate, captainName, abkNames }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -608,7 +608,7 @@ function CrewCheckinPanel({ scheduleId, captainName, abkNames }) {
       setLoading(false);
       return;
     }
-    fetchCrewCheckins(scheduleId)
+    fetchCrewCheckins(scheduleId, tripDate)
       .then(setData)
       .catch(() => setData({ crew: [] }))
       .finally(() => setLoading(false));

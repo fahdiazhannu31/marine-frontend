@@ -134,8 +134,11 @@ export function getExportExcelUrl(uploadId) {
 }
 
 // ── Crew check-ins for a schedule ────────────────────────────────────────────
-export async function fetchCrewCheckins(scheduleId) {
-  return api.get(`${BASE}/crew-checkins/${scheduleId}`, { auth: true });
+export async function fetchCrewCheckins(scheduleId, tripDate = null) {
+  const params = tripDate ? `?trip_date=${tripDate}` : "";
+  return api.get(`${BASE}/crew-checkins/${scheduleId}${params}`, {
+    auth: true,
+  });
 }
 
 // ── Switch seats between two passengers ──────────────────────────────────────
