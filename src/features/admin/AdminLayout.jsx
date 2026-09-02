@@ -87,7 +87,7 @@ export default function AdminLayout({ children }) {
             {/* Brand */}
             <div className="adm-sidebar-brand">
               <img
-                src="/assets_users/images/logo.webp"
+                src="/images/logo/nama-marine-logo.png"
                 alt="NAMA Marine"
                 style={{ height: 36, maxWidth: 140, objectFit: "contain" }}
               />

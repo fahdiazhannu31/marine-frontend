@@ -39,7 +39,7 @@ export default function Login() {
       <div className="nama-auth-card">
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <img
-            src="/assets_users/images/logo.webp"
+            src="/images/logo/nama-marine-logo.png"
             alt="NAMA Marine"
             style={{ height: 48, objectFit: "contain" }}
           />
