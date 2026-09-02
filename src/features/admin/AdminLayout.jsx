@@ -16,7 +16,6 @@ import {
   Users,
   LogOut,
   Menu,
-  Anchor,
 } from "lucide-react";
 import "./ui/adminTheme.css";
 import "./ui/AdminUI.css";
@@ -87,10 +86,11 @@ export default function AdminLayout({ children }) {
           >
             {/* Brand */}
             <div className="adm-sidebar-brand">
-              <div className="adm-sidebar-brand-mark">
-                <Anchor size={15} strokeWidth={2.5} />
-              </div>
-              <span className="adm-sidebar-brand-text">NAMA Marine</span>
+              <img
+                src="/assets_users/images/logo.webp"
+                alt="NAMA Marine"
+                style={{ height: 36, maxWidth: 140, objectFit: "contain" }}
+              />
             </div>
 
             {/* Nav */}

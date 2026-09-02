@@ -86,9 +86,12 @@ export default function GroupBoardingPass() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       {/* Header */}
       <div style={styles.header}>
-        <div style={styles.headerLogo}>⚓</div>
+        <img
+          src="https://namamarine.cloud/assets_users/images/logo.webp"
+          alt="NAMA Marine"
+          style={{ height: 44, objectFit: "contain" }}
+        />
         <div>
-          <h1 style={styles.headerTitle}>NAMA Marine</h1>
           <p style={styles.headerSub}>Boarding Pass — Self Service</p>
         </div>
       </div>

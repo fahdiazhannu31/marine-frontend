@@ -37,6 +37,13 @@ export default function Login() {
   return (
     <div className="nama-auth-page">
       <div className="nama-auth-card">
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <img
+            src="/assets_users/images/logo.webp"
+            alt="NAMA Marine"
+            style={{ height: 48, objectFit: "contain" }}
+          />
+        </div>
         <h1 className="nama-auth-title">Login</h1>
         <p className="nama-auth-subtitle">
           Masuk untuk melanjutkan booking paket perjalananmu.
