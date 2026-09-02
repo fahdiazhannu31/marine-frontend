@@ -85,11 +85,14 @@ export default function AdminLayout({ children }) {
             className={`adm-sidebar ${sidebarOpen ? "adm-sidebar-open" : ""}`}
           >
             {/* Brand */}
-            <div className="adm-sidebar-brand">
+            <div
+              className="adm-sidebar-brand"
+              style={{ justifyContent: "center", padding: "20px 16px" }}
+            >
               <img
                 src="/images/logo/nama-marine-logo.png"
                 alt="NAMA Marine"
-                style={{ height: 44, maxWidth: 160, objectFit: "contain" }}
+                style={{ height: 56, maxWidth: 180, objectFit: "contain" }}
               />
             </div>
 
