@@ -30,17 +30,18 @@
   --adm-text-muted: #61656f;
   --adm-text-faint: #9297a1;
 
-  /* Sidebar (slightly darker neutral, not pure black) */
-  --adm-sidebar-bg: #171a21;
-  --adm-sidebar-text: #c7cad3;
-  --adm-sidebar-text-active: #ffffff;
-  --adm-sidebar-hover: rgba(255, 255, 255, 0.06);
-  --adm-sidebar-active: rgba(47, 111, 237, 0.22);
-  --adm-sidebar-border: rgba(255, 255, 255, 0.08);
+  /* Sidebar (white/light theme) */
+  --adm-sidebar-bg: #ffffff;
+  --adm-sidebar-text: #4a5060;
+  --adm-sidebar-text-active: #14161a;
+  --adm-sidebar-hover: rgba(47, 111, 237, 0.06);
+  --adm-sidebar-active: rgba(47, 111, 237, 0.1);
+  --adm-sidebar-border: #e2e4e9;
 
   /* Typography */
-  --adm-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  --adm-font:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
 
   /* Radii + shadow */
   --adm-radius-sm: 6px;

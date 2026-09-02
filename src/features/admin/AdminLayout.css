@@ -33,7 +33,9 @@
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  z-index: 1300; /* must be above backdrop (1250) and toggle (1200) */
+  z-index: 1300;
+  border-right: 1px solid var(--adm-border);
+  box-shadow: 2px 0 8px rgba(20, 22, 26, 0.05);
 }
 
 .adm-sidebar-brand {

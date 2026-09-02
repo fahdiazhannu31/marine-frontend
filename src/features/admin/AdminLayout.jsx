@@ -89,7 +89,7 @@ export default function AdminLayout({ children }) {
               <img
                 src="/images/logo/nama-marine-logo.png"
                 alt="NAMA Marine"
-                style={{ height: 36, maxWidth: 140, objectFit: "contain" }}
+                style={{ height: 44, maxWidth: 160, objectFit: "contain" }}
               />
             </div>
 
