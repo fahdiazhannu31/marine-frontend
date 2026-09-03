@@ -2015,8 +2015,10 @@ function UploadForm({ schedules, onSuccess }) {
       const notFound = [];
       ["abk", "gro"].forEach((role) => {
         (crewAssign[role] || []).forEach((r) => {
-          if (r.status === "assigned") toast.success(`✓ ${r.role?.toUpperCase()} ${r.name} di-assign ke schedule.`);
-          else if (r.status === "not_found") notFound.push(`${r.role?.toUpperCase()} "${r.name}"`);
+          if (r.status === "assigned") {
+            const label = r.auto_created ? `✨ ${r.role?.toUpperCase()} ${r.name} dibuat & di-assign (baru).` : `✓ ${r.role?.toUpperCase()} ${r.name} di-assign ke schedule.`;
+            r.auto_created ? toast.info(label) : toast.success(label);
+          } else if (r.status === "not_found") notFound.push(`${r.role?.toUpperCase()} "${r.name}"`);
         });
       });
       if (notFound.length > 0) toast.error(`⚠️ Tidak ditemukan di DB crew: ${notFound.join(", ")}`);
