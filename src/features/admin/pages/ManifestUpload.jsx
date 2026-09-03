@@ -1999,21 +1999,27 @@ function UploadForm({ schedules, onSuccess }) {
       if (res.captain_name) parts.push(`Nahkoda: ${res.captain_name}`);
       toast.success(`Uploaded: ${parts.join(" · ")}.`);
 
-      // Show captain auto-assign result
+      // Show crew auto-assign results
       const ca = res.captain_assign;
       if (ca) {
         if (ca.status === "assigned") {
-          toast.success(
-            `⚓ Captain ${ca.captain_name} berhasil di-assign ke schedule.`,
-          );
+          toast.success(`⚓ Captain ${ca.captain_name || ca.name} berhasil di-assign ke schedule.`);
         } else if (ca.status === "already_assigned") {
-          toast.info(
-            `⚓ Captain ${ca.captain_name} sudah di-assign sebelumnya.`,
-          );
+          toast.info(`⚓ Captain ${ca.captain_name || ca.name} sudah di-assign sebelumnya.`);
         } else if (ca.status === "not_found") {
           toast.error(`⚠️ ${ca.message}`);
         }
       }
+      // ABK + GRO
+      const crewAssign = res.crew_assign || {};
+      const notFound = [];
+      ["abk", "gro"].forEach((role) => {
+        (crewAssign[role] || []).forEach((r) => {
+          if (r.status === "assigned") toast.success(`✓ ${r.role?.toUpperCase()} ${r.name} di-assign ke schedule.`);
+          else if (r.status === "not_found") notFound.push(`${r.role?.toUpperCase()} "${r.name}"`);
+        });
+      });
+      if (notFound.length > 0) toast.error(`⚠️ Tidak ditemukan di DB crew: ${notFound.join(", ")}`);
       if (fileRef.current) fileRef.current.value = "";
       setFile(null);
       onSuccess(res.upload_id);
