@@ -501,7 +501,9 @@ const MONTH_NAMES = [
 ];
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
-function DayDetailModal({ date, assignments, onClose }) {
+function DayDetailModal({ date, assignments, onClose, onDeleteAssignment }) {
+  const toast = useToast();
+  const confirm = useConfirm();
   const fmt = (v) =>
     v
       ? new Date(v).toLocaleTimeString("id-ID", {
@@ -509,6 +511,23 @@ function DayDetailModal({ date, assignments, onClose }) {
           minute: "2-digit",
         })
       : null;
+
+  const handleDelete = async (a) => {
+    const ok = await confirm({
+      title: `Hapus assignment ${a.crew_name}?`,
+      message: `${a.crew_name} akan di-remove dari schedule tanggal ini.`,
+      confirmLabel: "Hapus",
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteAssignment(a.id);
+      toast.success(`Assignment ${a.crew_name} dihapus.`);
+      onDeleteAssignment?.(a.id);
+    } catch (e) {
+      toast.error(e.message || "Gagal hapus assignment.");
+    }
+  };
 
   // Group by direction then role
   const grouped = assignments.reduce((acc, a) => {
@@ -675,6 +694,15 @@ function DayDetailModal({ date, assignments, onClose }) {
                         Belum
                       </span>
                     )}
+                    {/* Delete button */}
+                    <button
+                      className="adm-btn adm-btn-sm adm-btn-danger"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(a); }}
+                      title="Hapus assignment"
+                      style={{ flexShrink: 0, marginLeft: 4 }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 );
               })}
@@ -1677,6 +1705,12 @@ export default function Crew() {
           date={dayDetail.date}
           assignments={dayDetail.assignments}
           onClose={() => setDayDetail(null)}
+          onDeleteAssignment={(deletedId) => {
+            setDayDetail((prev) => prev
+              ? { ...prev, assignments: prev.assignments.filter((a) => a.id !== deletedId) }
+              : null
+            );
+          }}
         />
       )}
     </div>
