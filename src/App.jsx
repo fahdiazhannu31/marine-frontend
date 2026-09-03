@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 
 import Login from "./features/auth/Login.jsx";
+import Register from "./features/auth/Register.jsx";
 
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentFailure from "./pages/PaymentFailure.jsx";
@@ -59,6 +60,9 @@ function App() {
               path="/login"
               element={<Navigate to="/admin/login" replace />}
             />
+
+            {/* Register */}
+            <Route path="/register" element={<Register />} />
 
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-failure" element={<PaymentFailure />} />
