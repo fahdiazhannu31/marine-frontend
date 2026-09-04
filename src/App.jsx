@@ -17,7 +17,7 @@ import ManifestUpload from "./features/admin/pages/ManifestUpload.jsx";
 import ManifestFinal from "./features/admin/pages/ManifestFinal.jsx";
 import DailyOps from "./features/admin/pages/DailyOps.jsx";
 import Crew from "./features/admin/pages/Crew.jsx";
-import MasterData from "./features/admin/pages/MasterData.jsx";
+import GroupPrintDesk from "./features/admin/pages/GroupPrintDesk.jsx";
 
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
@@ -100,6 +100,14 @@ function App() {
               element={
                 <AdminLayout>
                   <CheckIn />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/print-desk"
+              element={
+                <AdminLayout>
+                  <GroupPrintDesk />
                 </AdminLayout>
               }
             />
