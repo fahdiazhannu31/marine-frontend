@@ -18,6 +18,7 @@ import ManifestFinal from "./features/admin/pages/ManifestFinal.jsx";
 import DailyOps from "./features/admin/pages/DailyOps.jsx";
 import Crew from "./features/admin/pages/Crew.jsx";
 import GroupPrintDesk from "./features/admin/pages/GroupPrintDesk.jsx";
+import MasterData from "./features/admin/pages/MasterData.jsx";
 
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
