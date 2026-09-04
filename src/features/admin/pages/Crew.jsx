@@ -504,6 +504,7 @@ const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 function DayDetailModal({ date, assignments, onClose, onDeleteAssignment }) {
   const toast = useToast();
   const confirm = useConfirm();
+  const [replacing, setReplacing] = useState(null);   // { assignment, crewList, selectedId, saving }
   const fmt = (v) =>
     v
       ? new Date(v).toLocaleTimeString("id-ID", {
@@ -526,6 +527,47 @@ function DayDetailModal({ date, assignments, onClose, onDeleteAssignment }) {
       onDeleteAssignment?.(a.id);
     } catch (e) {
       toast.error(e.message || "Gagal hapus assignment.");
+    }
+  };
+
+  // Open replace panel: load crew with same role
+  const handleStartReplace = async (a) => {
+    try {
+      const crewList = await fetchCrew(a.role);
+      setReplacing({
+        assignment: a,
+        crewList: Array.isArray(crewList) ? crewList.filter((c) => c.id !== a.crew_id) : [],
+        selectedId: '',
+        saving: false,
+      });
+    } catch (e) {
+      toast.error('Gagal memuat daftar crew.');
+    }
+  };
+
+  const handleConfirmReplace = async () => {
+    if (!replacing?.selectedId) { toast.error('Pilih crew pengganti dulu.'); return; }
+    setReplacing((r) => ({ ...r, saving: true }));
+    try {
+      const a = replacing.assignment;
+      // Delete old assignment
+      await deleteAssignment(a.id);
+      // Create new assignment with same schedule/boat/trip_date/direction
+      await createAssignment({
+        crew_id:     parseInt(replacing.selectedId),
+        schedule_id: a.schedule_id ?? null,
+        boat_id:     a.boat_id     ?? null,
+        trip_date:   a.trip_date   ?? date,
+        direction:   a.direction   ?? 'DEPARTURE',
+        notes:       'Diganti via calendar',
+      });
+      const newCrew = replacing.crewList.find((c) => c.id === parseInt(replacing.selectedId));
+      toast.success(`${a.crew_name} diganti dengan ${newCrew?.name ?? 'crew baru'}.`);
+      onDeleteAssignment?.(a.id);  // will trigger parent to refresh
+      setReplacing(null);
+    } catch (e) {
+      toast.error(e.message || 'Gagal mengganti crew.');
+      setReplacing((r) => ({ ...r, saving: false }));
     }
   };
 
@@ -694,16 +736,71 @@ function DayDetailModal({ date, assignments, onClose, onDeleteAssignment }) {
                         Belum
                       </span>
                     )}
-                    {/* Delete button */}
-                    <button
-                      className="adm-btn adm-btn-sm adm-btn-danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(a); }}
-                      title="Hapus assignment"
-                      style={{ flexShrink: 0, marginLeft: 4 }}
-                    >
-                      <Trash2 size={13} />
-                    </button>
+                    {/* Delete & Replace buttons */}
+                    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-secondary"
+                        onClick={(e) => { e.stopPropagation(); handleStartReplace(a); }}
+                        title="Ganti crew"
+                        style={{ fontSize: 11 }}
+                      >
+                        ↔ Ganti
+                      </button>
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-danger"
+                        onClick={(e) => { e.stopPropagation(); handleDelete(a); }}
+                        title="Hapus assignment"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Inline replace panel */}
+                  {replacing?.assignment?.id === a.id && (
+                    <div
+                      style={{
+                        marginTop: 8,
+                        padding: "12px 14px",
+                        background: "#fff8f0",
+                        border: "1px solid #F2881C40",
+                        borderRadius: 8,
+                        display: "flex",
+                        gap: 8,
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#c96a00" }}>
+                        Ganti {a.crew_name} dengan:
+                      </span>
+                      <select
+                        value={replacing.selectedId}
+                        onChange={(e) => setReplacing((r) => ({ ...r, selectedId: e.target.value }))}
+                        style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ddd", fontSize: 13, flex: 1, minWidth: 160 }}
+                        disabled={replacing.saving}
+                      >
+                        <option value="">— Pilih crew {a.role} —</option>
+                        {replacing.crewList.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-primary"
+                        onClick={handleConfirmReplace}
+                        disabled={replacing.saving || !replacing.selectedId}
+                      >
+                        {replacing.saving ? <RefreshCw size={13} className="ci-spin" /> : "Konfirmasi"}
+                      </button>
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-ghost"
+                        onClick={() => setReplacing(null)}
+                        disabled={replacing.saving}
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  )}
                 );
               })}
             </div>
