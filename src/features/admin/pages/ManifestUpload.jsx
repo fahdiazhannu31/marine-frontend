@@ -1999,13 +1999,31 @@ function UploadForm({ schedules, onSuccess }) {
       if (res.captain_name) parts.push(`Nahkoda: ${res.captain_name}`);
       toast.success(`Uploaded: ${parts.join(" · ")}.`);
 
+      // Show QR reuse info for RETURN manifests
+      if (res.qr_reused_count > 0 || res.qr_new_count > 0) {
+        const msgs = [];
+        if (res.qr_reused_count > 0)
+          msgs.push(
+            `${res.qr_reused_count} grup pakai QR lama (tidak perlu blast ulang)`,
+          );
+        if (res.qr_new_count > 0)
+          msgs.push(
+            `${res.qr_new_count} grup dapat QR baru (perlu blast email)`,
+          );
+        toast.info(`🔄 QR: ${msgs.join(" · ")}`);
+      }
+
       // Show crew auto-assign results
       const ca = res.captain_assign;
       if (ca) {
         if (ca.status === "assigned") {
-          toast.success(`⚓ Captain ${ca.captain_name || ca.name} berhasil di-assign ke schedule.`);
+          toast.success(
+            `⚓ Captain ${ca.captain_name || ca.name} berhasil di-assign ke schedule.`,
+          );
         } else if (ca.status === "already_assigned") {
-          toast.info(`⚓ Captain ${ca.captain_name || ca.name} sudah di-assign sebelumnya.`);
+          toast.info(
+            `⚓ Captain ${ca.captain_name || ca.name} sudah di-assign sebelumnya.`,
+          );
         } else if (ca.status === "not_found") {
           toast.error(`⚠️ ${ca.message}`);
         }
@@ -2016,12 +2034,16 @@ function UploadForm({ schedules, onSuccess }) {
       ["abk", "gro"].forEach((role) => {
         (crewAssign[role] || []).forEach((r) => {
           if (r.status === "assigned") {
-            const label = r.auto_created ? `✨ ${r.role?.toUpperCase()} ${r.name} dibuat & di-assign (baru).` : `✓ ${r.role?.toUpperCase()} ${r.name} di-assign ke schedule.`;
+            const label = r.auto_created
+              ? `✨ ${r.role?.toUpperCase()} ${r.name} dibuat & di-assign (baru).`
+              : `✓ ${r.role?.toUpperCase()} ${r.name} di-assign ke schedule.`;
             r.auto_created ? toast.info(label) : toast.success(label);
-          } else if (r.status === "not_found") notFound.push(`${r.role?.toUpperCase()} "${r.name}"`);
+          } else if (r.status === "not_found")
+            notFound.push(`${r.role?.toUpperCase()} "${r.name}"`);
         });
       });
-      if (notFound.length > 0) toast.error(`⚠️ Tidak ditemukan di DB crew: ${notFound.join(", ")}`);
+      if (notFound.length > 0)
+        toast.error(`⚠️ Tidak ditemukan di DB crew: ${notFound.join(", ")}`);
       if (fileRef.current) fileRef.current.value = "";
       setFile(null);
       onSuccess(res.upload_id);
