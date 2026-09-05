@@ -585,7 +585,26 @@ export default function CheckIn() {
       );
     } catch (e) {
       playBeep("error");
-      toast.error(e.message || "QR tidak dikenali.");
+      // Handle specific 409 error types from backend
+      if (e.status === 409 && e.data) {
+        const errData = e.data;
+        if (errData.type === "too_early_for_return") {
+          toast.warning(
+            `⏰ Belum waktunya check-in pulang. Jadwal return jam ${errData.return_hour}.`,
+          );
+        } else if (errData.type === "already_checked_in_return") {
+          toast.info(`✓ Group sudah selesai check-in pulang hari ini.`);
+        } else if (errData.type === "already_checked_in") {
+          const retTime = errData.return_schedule_time
+            ? ` Return tersedia setelah jam ${new Date(errData.return_schedule_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}.`
+            : " Silakan kembali besok.";
+          toast.info(`ℹ️ Group sudah check-in hari ini.${retTime}`);
+        } else {
+          toast.error(errData.error || e.message || "QR tidak dikenali.");
+        }
+      } else {
+        toast.error(e.message || "QR tidak dikenali.");
+      }
     } finally {
       setSearching(false);
     }
