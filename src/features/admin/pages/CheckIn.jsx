@@ -22,6 +22,8 @@ const ROLE_COLORS = {
   captain: "#1800AD",
   abk: "#0064C8",
   gro: "#009678",
+  kkm: "#8B4513",
+  fl: "#6B6B6B",
   staff: "#505050",
   other: "#826428",
 };
@@ -32,6 +34,8 @@ function roleLabel(r) {
       captain: "Captain",
       abk: "ABK",
       gro: "GRO",
+      kkm: "KKM",
+      fl: "FL",
       staff: "Staff",
       other: "Other",
     }[r] ?? r

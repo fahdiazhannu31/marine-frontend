@@ -39,6 +39,8 @@ const ROLES = [
   { value: "captain", label: "Captain", color: "#1800AD" },
   { value: "abk", label: "ABK", color: "#0078D4" },
   { value: "gro", label: "GRO", color: "#00A478" },
+  { value: "kkm", label: "KKM", color: "#8B4513" },
+  { value: "fl", label: "FL", color: "#6B6B6B" },
   { value: "staff", label: "Staff", color: "#646464" },
   { value: "other", label: "Other", color: "#967832" },
 ];
