@@ -806,6 +806,7 @@ function CrewCheckinPanel({
 // ── TicketsPanel ──────────────────────────────────────────────────────────────
 function TicketsPanel({ tickets, upload, onRefresh }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const [searchInput, setSearchInput] = useState(""); // immediate input value
   const [search, setSearch] = useState(""); // debounced search value
   const [filter, setFilter] = useState("all");
@@ -953,6 +954,27 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
     }
   };
 
+  // Delete ticket permanently
+  const handleDeleteTicket = async (ticket) => {
+    const ok = await confirm({
+      title: `Hapus ${ticket.passenger_name}?`,
+      message:
+        "Ticket akan dihapus permanen dan kursi dibebaskan. Tindakan ini tidak bisa dibatalkan.",
+      confirmLabel: "Hapus",
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/api/admin/manifest/tickets/${ticket.id}`, {
+        auth: true,
+      });
+      toast.success(`✓ ${ticket.passenger_name} dihapus`);
+      onRefresh();
+    } catch (err) {
+      toast.error(err.message || "Gagal menghapus ticket");
+    }
+  };
+
   // Add passenger manually
   const handleAddPassenger = async (e) => {
     e.preventDefault();
@@ -978,8 +1000,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         id_passport: "",
       });
       // Refresh tickets
-      const fresh = await fetchUploadDetail(upload.id);
-      setData(fresh);
+      onRefresh();
     } catch (err) {
       toast.error(err.message || "Gagal menambah penumpang");
     } finally {
@@ -1515,6 +1536,18 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                         <ArrowLeftRight size={13} />
                       </button>
                     )}
+                    <button
+                      className="adm-btn adm-btn-sm"
+                      onClick={() => handleDeleteTicket(t)}
+                      title="Hapus ticket secara permanen"
+                      style={{
+                        background: "#fee2e2",
+                        color: "#dc2626",
+                        border: "1px solid #fca5a5",
+                      }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </td>
               </tr>
