@@ -49,12 +49,15 @@ import {
 
 function fmtDate(v) {
   if (!v) return "-";
-  return new Date(v).toLocaleString("id-ID", {
+  // Parse as UTC and convert to WIB (Asia/Jakarta)
+  const date = new Date(v.replace(" ", "T") + "Z"); // Force UTC parsing
+  return date.toLocaleString("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Jakarta", // Display in WIB
   });
 }
 
