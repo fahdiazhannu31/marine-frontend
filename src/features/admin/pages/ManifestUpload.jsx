@@ -1424,7 +1424,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             </tr>
           </thead>
           <tbody>
-            {paginatedTickets.map((t) => (
+            {paginatedTickets.map((t, idx) => (
               <tr
                 key={t.id}
                 style={{
@@ -1432,7 +1432,9 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                   textDecoration: isCancelled(t) ? "line-through" : "none",
                 }}
               >
-                <td style={{ color: "var(--adm-text-faint)" }}>{t.seq_no}</td>
+                <td style={{ color: "var(--adm-text-faint)" }}>
+                  {startIndex + idx + 1}
+                </td>
                 <td>
                   <span className="adm-badge" style={ketBadgeStyle(t.ket)}>
                     {t.ket || "—"}
