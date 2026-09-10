@@ -24,6 +24,7 @@ import { useToast } from "../ui/ToastContext.jsx";
 import { useConfirm } from "../ui/ConfirmContext.jsx";
 import YachtSeatMap from "../components/YachtSeatMap.jsx";
 import { API_URL } from "../../../config/BaseUrl.js";
+import { api } from "../../../services/api.js";
 import {
   Printer,
   Pencil,
@@ -817,6 +818,19 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const [showingQrCodes, setShowingQrCodes] = useState(false);
   const [qrCodesData, setQrCodesData] = useState(null);
   const [loadingQrCodes, setLoadingQrCodes] = useState(false);
+  const [showAddPassenger, setShowAddPassenger] = useState(false);
+  const [addPassengerForm, setAddPassengerForm] = useState({
+    passenger_name: "",
+    group_name: "",
+    ket: "DAY TRIP",
+    email: "",
+    notes: "",
+    age: "",
+    gender: "",
+    domicile: "",
+    id_passport: "",
+  });
+  const [addingPassenger, setAddingPassenger] = useState(false);
   const itemsPerPage = 20;
 
   // Debounce search input (300ms delay)
@@ -936,6 +950,40 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
       toast.error("Failed to send emails: " + e.message);
     } finally {
       setSendingEmails(false);
+    }
+  };
+
+  // Add passenger manually
+  const handleAddPassenger = async (e) => {
+    e.preventDefault();
+    if (!upload) return;
+    setAddingPassenger(true);
+    try {
+      const payload = { ...addPassengerForm };
+      if (!payload.group_name) payload.group_name = payload.passenger_name;
+      await api.post(`/api/admin/manifest/${upload.id}/tickets`, payload, {
+        auth: true,
+      });
+      toast.success(`✓ ${payload.passenger_name} berhasil ditambahkan`);
+      setShowAddPassenger(false);
+      setAddPassengerForm({
+        passenger_name: "",
+        group_name: "",
+        ket: "DAY TRIP",
+        email: "",
+        notes: "",
+        age: "",
+        gender: "",
+        domicile: "",
+        id_passport: "",
+      });
+      // Refresh tickets
+      const fresh = await fetchUploadDetail(upload.id);
+      setData(fresh);
+    } catch (err) {
+      toast.error(err.message || "Gagal menambah penumpang");
+    } finally {
+      setAddingPassenger(false);
     }
   };
 
@@ -1072,6 +1120,19 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
           flexWrap: "wrap",
         }}
       >
+        {/* Add Passenger button */}
+        <button
+          className="adm-btn adm-btn-sm"
+          style={{
+            background: "#10b981",
+            color: "#fff",
+            border: "none",
+            marginRight: 8,
+          }}
+          onClick={() => setShowAddPassenger(true)}
+        >
+          + Add Passenger
+        </button>
         <span
           style={{
             fontSize: 12,
@@ -1538,6 +1599,211 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             onRefresh();
           }}
         />
+      )}
+
+      {/* Add Passenger Modal */}
+      {showAddPassenger && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: 20,
+          }}
+          onClick={() => setShowAddPassenger(false)}
+        >
+          <div
+            style={{
+              background: "var(--adm-card-bg, #fff)",
+              borderRadius: 12,
+              padding: 24,
+              width: "100%",
+              maxWidth: 480,
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: "0 0 16px", fontSize: 16 }}>
+              + Add Passenger Manual
+            </h3>
+            <form onSubmit={handleAddPassenger}>
+              <div className="adm-form-row">
+                <div className="adm-field">
+                  <label>Nama Penumpang *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Nama lengkap"
+                    value={addPassengerForm.passenger_name}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        passenger_name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="adm-field">
+                  <label>Group Name</label>
+                  <input
+                    type="text"
+                    placeholder="Kosongkan = sama dengan nama"
+                    value={addPassengerForm.group_name}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        group_name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="adm-form-row">
+                <div className="adm-field">
+                  <label>Tipe</label>
+                  <select
+                    value={addPassengerForm.ket}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        ket: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="DAY TRIP">Day Trip</option>
+                    <option value="OVERNIGHT">Overnight</option>
+                    <option value="STAFF">Staff</option>
+                    <option value="FOC">FOC</option>
+                    <option value="VENDOR">Vendor</option>
+                  </select>
+                </div>
+                <div className="adm-field">
+                  <label>Gender</label>
+                  <select
+                    value={addPassengerForm.gender}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        gender: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">-</option>
+                    <option value="M">Laki-laki</option>
+                    <option value="F">Perempuan</option>
+                  </select>
+                </div>
+              </div>
+              <div className="adm-form-row">
+                <div className="adm-field">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="Opsional"
+                    value={addPassengerForm.email}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="adm-field">
+                  <label>ID / Passport</label>
+                  <input
+                    type="text"
+                    placeholder="Opsional"
+                    value={addPassengerForm.id_passport}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        id_passport: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="adm-form-row">
+                <div className="adm-field">
+                  <label>Domisili</label>
+                  <input
+                    type="text"
+                    placeholder="Opsional"
+                    value={addPassengerForm.domicile}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        domicile: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="adm-field">
+                  <label>Umur</label>
+                  <input
+                    type="text"
+                    placeholder="Opsional"
+                    value={addPassengerForm.age}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        age: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="adm-field">
+                <label>Notes</label>
+                <input
+                  type="text"
+                  placeholder="Walk-in, last minute, dll"
+                  value={addPassengerForm.notes}
+                  onChange={(e) =>
+                    setAddPassengerForm({
+                      ...addPassengerForm,
+                      notes: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "flex-end",
+                  marginTop: 16,
+                }}
+              >
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-sm"
+                  onClick={() => setShowAddPassenger(false)}
+                  disabled={addingPassenger}
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                  disabled={addingPassenger}
+                >
+                  {addingPassenger ? "Menyimpan…" : "Tambah Penumpang"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* QR Codes Viewer Modal */}
