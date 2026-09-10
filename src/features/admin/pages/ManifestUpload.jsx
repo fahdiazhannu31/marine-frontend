@@ -2238,7 +2238,7 @@ function UploadList({ uploads, selectedId, onSelect, onDelete }) {
                   <div className="adm-cell-muted">Kapten: {u.captain_name}</div>
                 )}
               </td>
-              <td>{fmtDate(u.trip_date)}</td>
+              <td>{fmtDate(u.schedule_date || u.trip_date)}</td>
               <td>
                 <span
                   className={`adm-badge ${u.direction === "RETURN" ? "adm-badge-info" : "adm-badge-warning"}`}
