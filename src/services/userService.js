@@ -1,4 +1,4 @@
-import api from './api';
+import { api } from "./api";
 
 /**
  * User Management Service
@@ -8,13 +8,13 @@ import api from './api';
 // List all users with optional filters
 export const listUsers = async (filters = {}) => {
   const params = new URLSearchParams();
-  if (filters.search) params.append('search', filters.search);
-  if (filters.role) params.append('role', filters.role);
-  if (filters.status) params.append('status', filters.status);
+  if (filters.search) params.append("search", filters.search);
+  if (filters.role) params.append("role", filters.role);
+  if (filters.status) params.append("status", filters.status);
 
   const query = params.toString();
-  const url = query ? `/admin/users?${query}` : '/admin/users';
-  
+  const url = query ? `/admin/users?${query}` : "/admin/users";
+
   const response = await api.get(url);
   return response.data;
 };
@@ -27,7 +27,7 @@ export const getUserDetail = async (userId) => {
 
 // Create new user
 export const createUser = async (userData) => {
-  const response = await api.post('/admin/users', userData);
+  const response = await api.post("/admin/users", userData);
   return response.data;
 };
 
