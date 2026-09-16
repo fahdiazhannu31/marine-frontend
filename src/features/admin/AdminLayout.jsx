@@ -17,6 +17,7 @@ import {
   LogOut,
   Menu,
   Printer,
+  UserCog,
 } from "lucide-react";
 import "./ui/adminTheme.css";
 import "./ui/AdminUI.css";
@@ -36,6 +37,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Manifest Final", path: "/admin/manifest-final", icon: FileText },
   { label: "Manifest", path: "/admin/manifest", icon: FolderOpen },
   { label: "Crew", path: "/admin/crew", icon: Users },
+  { label: "User Management", path: "/admin/user-management", icon: UserCog },
   { label: "Master Data", path: "/admin/master-data", icon: Database },
 ];
 

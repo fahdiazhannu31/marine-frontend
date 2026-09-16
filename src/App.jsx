@@ -19,6 +19,7 @@ import DailyOps from "./features/admin/pages/DailyOps.jsx";
 import Crew from "./features/admin/pages/Crew.jsx";
 import GroupPrintDesk from "./features/admin/pages/GroupPrintDesk.jsx";
 import MasterData from "./features/admin/pages/MasterData.jsx";
+import UserManagement from "./features/admin/pages/UserManagement.jsx";
 
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
@@ -141,6 +142,14 @@ function App() {
               element={
                 <AdminLayout>
                   <Crew />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/user-management"
+              element={
+                <AdminLayout>
+                  <UserManagement />
                 </AdminLayout>
               }
             />
