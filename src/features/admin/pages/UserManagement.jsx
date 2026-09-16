@@ -1,39 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Button,
-  TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Alert,
-  Snackbar,
-  Tooltip,
-  Stack,
-} from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  LockOpen as UnlockIcon,
-  VpnKey as ResetPasswordIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
+  UserCog,
+  Plus,
+  Edit,
+  Trash2,
+  LockOpen,
+  Key,
+  RefreshCw,
+  X,
+  Check,
+} from "lucide-react";
+import { useToast } from "../ui/ToastContext.jsx";
+import { useConfirm } from "../ui/ConfirmContext.jsx";
 import {
   listUsers,
   createUser,
@@ -41,15 +19,18 @@ import {
   deleteUser,
   unlockUser,
   resetUserPassword,
-} from '../../../services/userService';
+} from "../../../services/userService";
 
 export default function UserManagement() {
+  const toast = useToast();
+  const confirm = useConfirm();
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    search: '',
-    role: '',
-    status: '',
+    search: "",
+    role: "",
+    status: "",
   });
 
   // Modals
@@ -61,18 +42,15 @@ export default function UserManagement() {
 
   // Form states
   const [formData, setFormData] = useState({
-    username: '',
-    fullname: '',
-    email: '',
-    phone: '',
-    password: '',
-    role: 'user',
+    username: "",
+    fullname: "",
+    email: "",
+    phone: "",
+    password: "",
+    role: "user",
   });
 
-  const [newPassword, setNewPassword] = useState('');
-
-  // Snackbar
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [newPassword, setNewPassword] = useState("");
 
   useEffect(() => {
     fetchUsers();
@@ -84,7 +62,7 @@ export default function UserManagement() {
       const data = await listUsers(filters);
       setUsers(data);
     } catch (error) {
-      showSnackbar('Failed to load users', 'error');
+      toast.error("Failed to load users");
       console.error(error);
     } finally {
       setLoading(false);
@@ -99,25 +77,17 @@ export default function UserManagement() {
     fetchUsers();
   };
 
-  const showSnackbar = (message, severity = 'success') => {
-    setSnackbar({ open: true, message, severity });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   // ═══════════════════════════════════════════
   // CREATE USER
   // ═══════════════════════════════════════════
   const handleOpenCreateDialog = () => {
     setFormData({
-      username: '',
-      fullname: '',
-      email: '',
-      phone: '',
-      password: '',
-      role: 'user',
+      username: "",
+      fullname: "",
+      email: "",
+      phone: "",
+      password: "",
+      role: "user",
     });
     setCreateDialogOpen(true);
   };
@@ -125,11 +95,11 @@ export default function UserManagement() {
   const handleCreateUser = async () => {
     try {
       await createUser(formData);
-      showSnackbar('User created successfully');
+      toast.success("User created successfully");
       setCreateDialogOpen(false);
       fetchUsers();
     } catch (error) {
-      showSnackbar(error.response?.data?.error || 'Failed to create user', 'error');
+      toast.error(error.response?.data?.error || "Failed to create user");
     }
   };
 
@@ -139,9 +109,9 @@ export default function UserManagement() {
   const handleOpenEditDialog = (user) => {
     setSelectedUser(user);
     setFormData({
-      fullname: user.fullname || '',
-      phone: user.phone || '',
-      role: user.roles?.split(',')[0] || 'user',
+      fullname: user.fullname || "",
+      phone: user.phone || "",
+      role: user.roles?.split(",")[0] || "user",
       active: user.active,
     });
     setEditDialogOpen(true);
@@ -150,30 +120,32 @@ export default function UserManagement() {
   const handleUpdateUser = async () => {
     try {
       await updateUser(selectedUser.id, formData);
-      showSnackbar('User updated successfully');
+      toast.success("User updated successfully");
       setEditDialogOpen(false);
       fetchUsers();
     } catch (error) {
-      showSnackbar(error.response?.data?.error || 'Failed to update user', 'error');
+      toast.error(error.response?.data?.error || "Failed to update user");
     }
   };
 
   // ═══════════════════════════════════════════
   // DELETE USER
   // ═══════════════════════════════════════════
-  const handleOpenDeleteDialog = (user) => {
-    setSelectedUser(user);
-    setDeleteDialogOpen(true);
-  };
+  const handleOpenDeleteDialog = async (user) => {
+    const ok = await confirm({
+      title: "Deactivate User",
+      message: `Are you sure you want to deactivate ${user.email}? This will revoke all active tokens.`,
+      confirmLabel: "Deactivate",
+      danger: true,
+    });
+    if (!ok) return;
 
-  const handleDeleteUser = async () => {
     try {
-      await deleteUser(selectedUser.id);
-      showSnackbar('User deactivated successfully');
-      setDeleteDialogOpen(false);
+      await deleteUser(user.id);
+      toast.success("User deactivated successfully");
       fetchUsers();
     } catch (error) {
-      showSnackbar(error.response?.data?.error || 'Failed to deactivate user', 'error');
+      toast.error(error.response?.data?.error || "Failed to deactivate user");
     }
   };
 
@@ -183,10 +155,10 @@ export default function UserManagement() {
   const handleUnlockUser = async (user) => {
     try {
       await unlockUser(user.id);
-      showSnackbar(`Account ${user.email} unlocked successfully`);
+      toast.success(`Account ${user.email} unlocked successfully`);
       fetchUsers();
     } catch (error) {
-      showSnackbar(error.response?.data?.error || 'Failed to unlock user', 'error');
+      toast.error(error.response?.data?.error || "Failed to unlock user");
     }
   };
 
@@ -195,23 +167,23 @@ export default function UserManagement() {
   // ═══════════════════════════════════════════
   const handleOpenResetPasswordDialog = (user) => {
     setSelectedUser(user);
-    setNewPassword('');
+    setNewPassword("");
     setResetPasswordDialogOpen(true);
   };
 
   const handleResetPassword = async () => {
     if (newPassword.length < 8) {
-      showSnackbar('Password must be at least 8 characters', 'error');
+      toast.error("Password must be at least 8 characters");
       return;
     }
 
     try {
       await resetUserPassword(selectedUser.id, newPassword);
-      showSnackbar('Password reset successfully');
+      toast.success("Password reset successfully");
       setResetPasswordDialogOpen(false);
-      setNewPassword('');
+      setNewPassword("");
     } catch (error) {
-      showSnackbar(error.response?.data?.error || 'Failed to reset password', 'error');
+      toast.error(error.response?.data?.error || "Failed to reset password");
     }
   };
 
@@ -219,354 +191,515 @@ export default function UserManagement() {
   // RENDER
   // ═══════════════════════════════════════════
   const formatLockoutTime = (seconds) => {
-    if (!seconds || seconds <= 0) return '-';
+    if (!seconds || seconds <= 0) return "-";
     const minutes = Math.ceil(seconds / 60);
     return `${minutes} min`;
   };
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        User Management
-      </Typography>
+    <div className="adm-page">
+      {/* Header */}
+      <div className="adm-page-header">
+        <div>
+          <h1 style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <UserCog size={26} strokeWidth={1.8} /> User Management
+          </h1>
+          <p
+            style={{ margin: 0, color: "var(--adm-text-muted)", fontSize: 14 }}
+          >
+            Manage users, roles, and account security
+          </p>
+        </div>
+        <button
+          className="adm-btn adm-btn-primary"
+          onClick={handleOpenCreateDialog}
+        >
+          <Plus size={14} style={{ marginRight: 6 }} /> Add User
+        </button>
+      </div>
 
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <TextField
-            label="Search"
-            placeholder="Username, email, fullname"
+      <div
+        className="adm-card"
+        style={{ padding: "16px 20px", marginBottom: 24 }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
+          <input
+            className="adm-input"
+            placeholder="Search username, email, fullname..."
             value={filters.search}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            size="small"
-            sx={{ minWidth: 250 }}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
+            style={{ minWidth: 250 }}
           />
 
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Role</InputLabel>
-            <Select
-              value={filters.role}
-              label="Role"
-              onChange={(e) => handleFilterChange('role', e.target.value)}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="user">User</MenuItem>
-            </Select>
-          </FormControl>
+          <select
+            className="adm-select"
+            value={filters.role}
+            onChange={(e) => handleFilterChange("role", e.target.value)}
+            style={{ minWidth: 120 }}
+          >
+            <option value="">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
 
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={filters.status}
-              label="Status"
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="active">Active</MenuItem>
-              <MenuItem value="inactive">Inactive</MenuItem>
-            </Select>
-          </FormControl>
+          <select
+            className="adm-select"
+            value={filters.status}
+            onChange={(e) => handleFilterChange("status", e.target.value)}
+            style={{ minWidth: 120 }}
+          >
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
 
-          <Button
-            variant="contained"
-            startIcon={<RefreshIcon />}
+          <button
+            className="adm-btn adm-btn-secondary"
             onClick={handleApplyFilters}
             disabled={loading}
           >
-            Apply
-          </Button>
-
-          <Box sx={{ flexGrow: 1 }} />
-
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleOpenCreateDialog}
-          >
-            Add User
-          </Button>
-        </Stack>
-      </Paper>
+            <RefreshCw
+              size={14}
+              className={loading ? "ci-spin" : ""}
+              style={{ marginRight: 6 }}
+            />
+            {loading ? "Loading..." : "Apply"}
+          </button>
+        </div>
+      </div>
 
       {/* Users Table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Full Name</TableCell>
-              <TableCell>Roles</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Lock Status</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <div className="adm-table-wrap">
+        <table className="adm-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Full Name</th>
+              <th>Roles</th>
+              <th>Status</th>
+              <th>Lock Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} align="center">
-                  Loading...
-                </TableCell>
-              </TableRow>
+              <tr>
+                <td colSpan={8} style={{ textAlign: "center", padding: 32 }}>
+                  <RefreshCw
+                    size={18}
+                    className="ci-spin"
+                    style={{ verticalAlign: "middle", marginRight: 8 }}
+                  />
+                  Loading users...
+                </td>
+              </tr>
             ) : users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} align="center">
+              <tr>
+                <td
+                  colSpan={8}
+                  className="adm-empty"
+                  style={{ textAlign: "center", padding: 32 }}
+                >
                   No users found
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ) : (
               users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.fullname || '-'}</TableCell>
-                  <TableCell>
-                    {user.roles?.split(',').map((role) => (
-                      <Chip
+                <tr key={user.id}>
+                  <td
+                    style={{
+                      color: "var(--adm-text-faint)",
+                      fontFamily: "monospace",
+                      fontSize: 12,
+                    }}
+                  >
+                    #{String(user.id).padStart(4, "0")}
+                  </td>
+                  <td className="adm-cell-primary">{user.username}</td>
+                  <td style={{ fontSize: 13 }}>{user.email}</td>
+                  <td>{user.fullname || "-"}</td>
+                  <td>
+                    {user.roles?.split(",").map((role) => (
+                      <span
                         key={role}
-                        label={role}
-                        size="small"
-                        color={role === 'admin' ? 'error' : 'default'}
-                        sx={{ mr: 0.5 }}
-                      />
+                        className="adm-badge"
+                        style={{
+                          background:
+                            role === "admin" ? "#dc262620" : "#64646420",
+                          color: role === "admin" ? "#dc2626" : "#646464",
+                          marginRight: 4,
+                        }}
+                      >
+                        {role}
+                      </span>
                     ))}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={user.active ? 'Active' : 'Inactive'}
-                      size="small"
-                      color={user.active ? 'success' : 'default'}
-                    />
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td>
+                    <span
+                      className={`adm-badge ${user.active ? "adm-badge-success" : "adm-badge-neutral"}`}
+                    >
+                      {user.active ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td>
                     {user.is_locked ? (
-                      <Tooltip title={`Locked for ${formatLockoutTime(user.lockout_remaining)}`}>
-                        <Chip label="LOCKED" size="small" color="warning" />
-                      </Tooltip>
+                      <div>
+                        <span
+                          className="adm-badge"
+                          style={{ background: "#f5920030", color: "#c96a00" }}
+                        >
+                          🔒 LOCKED
+                        </span>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "var(--adm-text-muted)",
+                            marginTop: 2,
+                          }}
+                        >
+                          {formatLockoutTime(user.lockout_remaining)} left
+                        </div>
+                      </div>
+                    ) : user.attempt_count > 0 ? (
+                      <div>
+                        <span className="adm-badge adm-badge-success">OK</span>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "var(--adm-text-muted)",
+                            marginTop: 2,
+                          }}
+                        >
+                          {user.attempt_count} failed attempts
+                        </div>
+                      </div>
                     ) : (
-                      <Chip label="OK" size="small" color="success" />
+                      <span className="adm-badge adm-badge-success">OK</span>
                     )}
-                    {user.attempt_count > 0 && !user.is_locked && (
-                      <Typography variant="caption" display="block" color="text.secondary">
-                        {user.attempt_count} failed attempts
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="Edit">
-                      <IconButton size="small" onClick={() => handleOpenEditDialog(user)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {user.is_locked && (
-                      <Tooltip title="Unlock Account">
-                        <IconButton size="small" color="warning" onClick={() => handleUnlockUser(user)}>
-                          <UnlockIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    <Tooltip title="Reset Password">
-                      <IconButton
-                        size="small"
-                        color="primary"
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", gap: 4 }}>
+                      {user.is_locked && (
+                        <button
+                          className="adm-btn adm-btn-sm adm-btn-secondary"
+                          onClick={() => handleUnlockUser(user)}
+                          title="Unlock Account"
+                        >
+                          <LockOpen size={13} />
+                        </button>
+                      )}
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-secondary"
+                        onClick={() => handleOpenEditDialog(user)}
+                        title="Edit"
+                      >
+                        <Edit size={13} />
+                      </button>
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-secondary"
                         onClick={() => handleOpenResetPasswordDialog(user)}
+                        title="Reset Password"
                       >
-                        <ResetPasswordIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Deactivate">
-                      <IconButton
-                        size="small"
-                        color="error"
+                        <Key size={13} />
+                      </button>
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-danger"
                         onClick={() => handleOpenDeleteDialog(user)}
+                        title="Deactivate"
                       >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               ))
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </div>
 
-      {/* Create User Dialog */}
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create New User</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Username"
-              required
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              fullWidth
-            />
-            <TextField
-              label="Full Name"
-              required
-              value={formData.fullname}
-              onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
-              fullWidth
-            />
-            <TextField
-              label="Email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              fullWidth
-            />
-            <TextField
-              label="Phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="081234567890"
-              fullWidth
-            />
-            <TextField
-              label="Password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              helperText="Minimum 8 characters"
-              fullWidth
-            />
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={formData.role}
-                label="Role"
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+      {/* Create User Modal */}
+      {createDialogOpen && (
+        <div onClick={() => setCreateDialogOpen(false)} style={styles.backdrop}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="adm-card"
+            style={styles.modal}
+          >
+            <h3 style={{ margin: "0 0 20px" }}>Create New User</h3>
+
+            <div className="adm-form-row">
+              <div className="adm-field">
+                <label>Username *</label>
+                <input
+                  value={formData.username}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
+                  placeholder="username"
+                />
+              </div>
+              <div className="adm-field">
+                <label>Full Name *</label>
+                <input
+                  value={formData.fullname}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullname: e.target.value })
+                  }
+                  placeholder="John Doe"
+                />
+              </div>
+            </div>
+
+            <div className="adm-form-row">
+              <div className="adm-field">
+                <label>Email *</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  placeholder="user@example.com"
+                />
+              </div>
+              <div className="adm-field">
+                <label>Phone</label>
+                <input
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  placeholder="081234567890"
+                />
+              </div>
+            </div>
+
+            <div className="adm-form-row">
+              <div className="adm-field">
+                <label>Password *</label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  placeholder="Min. 8 characters"
+                />
+              </div>
+              <div className="adm-field">
+                <label>Role *</label>
+                <select
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="adm-form-actions">
+              <button
+                className="adm-btn adm-btn-ghost"
+                onClick={() => setCreateDialogOpen(false)}
               >
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleCreateUser}>
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit User Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit User</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Full Name"
-              value={formData.fullname}
-              onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
-              fullWidth
-            />
-            <TextField
-              label="Phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              fullWidth
-            />
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={formData.role}
-                label="Role"
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                Cancel
+              </button>
+              <button
+                className="adm-btn adm-btn-primary"
+                onClick={handleCreateUser}
               >
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={formData.active}
-                label="Status"
-                onChange={(e) => setFormData({ ...formData, active: e.target.value })}
+                <Check size={14} style={{ marginRight: 6 }} /> Create User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {editDialogOpen && (
+        <div onClick={() => setEditDialogOpen(false)} style={styles.backdrop}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="adm-card"
+            style={styles.modal}
+          >
+            <h3 style={{ margin: "0 0 4px" }}>Edit User</h3>
+            <p
+              style={{
+                margin: "0 0 20px",
+                fontSize: 13,
+                color: "var(--adm-text-muted)",
+              }}
+            >
+              {selectedUser?.email}
+            </p>
+
+            <div className="adm-form-row">
+              <div className="adm-field">
+                <label>Full Name</label>
+                <input
+                  value={formData.fullname}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullname: e.target.value })
+                  }
+                />
+              </div>
+              <div className="adm-field">
+                <label>Phone</label>
+                <input
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="adm-form-row">
+              <div className="adm-field">
+                <label>Role</label>
+                <select
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="adm-field">
+                <label>Status</label>
+                <select
+                  value={formData.active}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      active: parseInt(e.target.value),
+                    })
+                  }
+                >
+                  <option value={1}>Active</option>
+                  <option value={0}>Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="adm-form-actions">
+              <button
+                className="adm-btn adm-btn-ghost"
+                onClick={() => setEditDialogOpen(false)}
               >
-                <MenuItem value={1}>Active</MenuItem>
-                <MenuItem value={0}>Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleUpdateUser}>
-            Update
-          </Button>
-        </DialogActions>
-      </Dialog>
+                Cancel
+              </button>
+              <button
+                className="adm-btn adm-btn-primary"
+                onClick={handleUpdateUser}
+              >
+                <Check size={14} style={{ marginRight: 6 }} /> Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Delete User Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Deactivate User</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            This will deactivate the user account and revoke all active tokens.
-          </Alert>
-          <Typography>
-            Are you sure you want to deactivate <strong>{selectedUser?.email}</strong>?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={handleDeleteUser}>
-            Deactivate
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Reset Password Modal */}
+      {resetPasswordDialogOpen && (
+        <div
+          onClick={() => setResetPasswordDialogOpen(false)}
+          style={styles.backdrop}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="adm-card"
+            style={styles.modal}
+          >
+            <h3 style={{ margin: "0 0 4px" }}>Reset User Password</h3>
+            <p
+              style={{
+                margin: "0 0 8px",
+                fontSize: 13,
+                color: "var(--adm-text-muted)",
+              }}
+            >
+              User: <strong>{selectedUser?.email}</strong>
+            </p>
+            <p
+              style={{
+                margin: "0 0 20px",
+                fontSize: 12,
+                padding: "8px 12px",
+                background: "#eff6ff",
+                borderRadius: 6,
+                color: "#1e40af",
+              }}
+            >
+              ℹ️ Admin will set new password directly. User will be notified
+              separately.
+            </p>
 
-      {/* Reset Password Dialog */}
-      <Dialog open={resetPasswordDialogOpen} onClose={() => setResetPasswordDialogOpen(false)}>
-        <DialogTitle>Reset User Password</DialogTitle>
-        <DialogContent>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Admin will set new password directly. User will be notified separately.
-          </Alert>
-          <Typography variant="body2" gutterBottom>
-            User: <strong>{selectedUser?.email}</strong>
-          </Typography>
-          <TextField
-            label="New Password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            helperText="Minimum 8 characters"
-            fullWidth
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setResetPasswordDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleResetPassword}>
-            Reset Password
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <div className="adm-field">
+              <label>New Password *</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Minimum 8 characters"
+              />
+            </div>
 
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+            <div className="adm-form-actions">
+              <button
+                className="adm-btn adm-btn-ghost"
+                onClick={() => setResetPasswordDialogOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="adm-btn adm-btn-primary"
+                onClick={handleResetPassword}
+              >
+                <Key size={14} style={{ marginRight: 6 }} /> Reset Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
+
+// ── Shared inline styles ──────────────────────────────────────────────────────
+const styles = {
+  backdrop: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,.55)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 9999,
+    padding: 16,
+  },
+  modal: {
+    width: "100%",
+    maxWidth: 560,
+    maxHeight: "90vh",
+    overflow: "auto",
+    padding: 28,
+  },
+};
