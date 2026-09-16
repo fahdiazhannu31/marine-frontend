@@ -25,12 +25,12 @@ import ScrollToTop from "./components/ScrollToTop.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { isUserAdmin } from "./utils/roleUtils.js";
 
-// Smart root redirect — goes to dashboard if already logged in, else login page
+// Smart root redirect — goes to daily-ops if already logged in, else login page
 function RootRedirect() {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
   if (isAuthenticated && isUserAdmin(user)) {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin/daily-ops" replace />;
   }
   return <Navigate to="/admin/login" replace />;
 }

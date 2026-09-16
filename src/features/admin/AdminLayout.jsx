@@ -24,18 +24,10 @@ import "./ui/AdminUI.css";
 import "./AdminLayout.css";
 
 const ADMIN_NAV_ITEMS = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Daily Ops", path: "/admin/daily-ops", icon: ClipboardList },
-  {
-    label: "Yacht Seat Booking",
-    path: "/admin/yacht-seat-booking",
-    icon: Armchair,
-  },
+  { label: "Manifest Upload", path: "/admin/manifest-upload", icon: Upload },
   { label: "Check-in", path: "/admin/checkin", icon: ScanLine },
   { label: "Print Desk", path: "/admin/print-desk", icon: Printer },
-  { label: "Manifest Upload", path: "/admin/manifest-upload", icon: Upload },
-  { label: "Manifest Final", path: "/admin/manifest-final", icon: FileText },
-  { label: "Manifest", path: "/admin/manifest", icon: FolderOpen },
   { label: "Crew", path: "/admin/crew", icon: Users },
   { label: "User Management", path: "/admin/user-management", icon: UserCog },
   { label: "Master Data", path: "/admin/master-data", icon: Database },
