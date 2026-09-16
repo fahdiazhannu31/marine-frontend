@@ -905,7 +905,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   }, [search, filter]);
 
   // Print functions
-  const bpBase = `${API_URL}/api/admin/manifest/boarding-pass/${upload?.id}`;
+  const bpBase = `${API_URL}/api/admin/manifest/boarding-pass-template/${upload?.id}`;
   const printAll = () => window.open(bpBase, "_blank");
   const printOne = (id) => window.open(`${bpBase}?ticket_ids=${id}`, "_blank");
   const printFiltered = () =>
