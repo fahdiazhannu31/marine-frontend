@@ -100,6 +100,7 @@ export default function DailyOps() {
     unassigned_seats = [],
     capacity_warnings = [],
     today_tomorrow = [],
+    manifest_uploads = [], // Add this if backend returns it
   } = overview || {};
 
   return (
@@ -125,6 +126,10 @@ export default function DailyOps() {
           <div className="adm-stat-grid">
             {today_tomorrow.map((s) => {
               const hasManifest = (s.manifest_pax ?? 0) > 0;
+              const manifestUpload = s.manifest_upload_id
+                ? { id: s.manifest_upload_id, confirmed: s.manifest_confirmed }
+                : null;
+
               return (
                 <div key={s.id} className="adm-stat-card">
                   <span
@@ -221,6 +226,25 @@ export default function DailyOps() {
                               ☀️ Day trip: <strong>{s.manifest_daytrip}</strong>
                             </span>
                           )}
+                        </div>
+                      )}
+
+                      {/* Download manifest button (if confirmed) */}
+                      {manifestUpload && manifestUpload.confirmed && (
+                        <div style={{ marginTop: 8 }}>
+                          <a
+                            href={`${API_URL}/api/admin/manifest/export-excel/${manifestUpload.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="adm-btn adm-btn-sm adm-btn-secondary"
+                            style={{
+                              width: "100%",
+                              textAlign: "center",
+                              fontSize: 11,
+                            }}
+                          >
+                            📥 Download Manifest Final (Excel)
+                          </a>
                         </div>
                       )}
                     </div>
