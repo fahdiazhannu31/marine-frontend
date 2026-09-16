@@ -52,9 +52,30 @@ export default function UserManagement() {
 
   const [newPassword, setNewPassword] = useState("");
 
+  // Debounce timer for search
+  const searchTimerRef = React.useRef(null);
+
+  // Auto-fetch when dropdowns change
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [filters.role, filters.status]);
+
+  // Debounced search effect (500ms delay after user stops typing)
+  useEffect(() => {
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+
+    searchTimerRef.current = setTimeout(() => {
+      fetchUsers();
+    }, 500);
+
+    return () => {
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, [filters.search]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -71,10 +92,6 @@ export default function UserManagement() {
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleApplyFilters = () => {
-    fetchUsers();
   };
 
   // ═══════════════════════════════════════════
@@ -261,18 +278,13 @@ export default function UserManagement() {
             <option value="inactive">Inactive</option>
           </select>
 
-          <button
-            className="adm-btn adm-btn-secondary"
-            onClick={handleApplyFilters}
-            disabled={loading}
-          >
+          {loading && (
             <RefreshCw
               size={14}
-              className={loading ? "ci-spin" : ""}
-              style={{ marginRight: 6 }}
+              className="ci-spin"
+              style={{ color: "var(--adm-accent)" }}
             />
-            {loading ? "Loading..." : "Apply"}
-          </button>
+          )}
         </div>
       </div>
 
