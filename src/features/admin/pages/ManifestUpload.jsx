@@ -67,7 +67,7 @@ function scheduleLabel(s) {
   return `${t} — ${s.boat_name || "?"} — ${d}`;
 }
 
-const TABS = ["Upload", "Tickets", "Baggage", "Manifest Final"];
+const TABS = ["Upload", "Tickets", "Baggage"];
 
 // ── SeatMap with Group Highlight ─────────────────────────────────────────────
 // Using YachtSeatMap component for proper boat layouts including MOLA-MOLA
