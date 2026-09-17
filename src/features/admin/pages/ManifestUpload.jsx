@@ -3040,14 +3040,6 @@ export default function ManifestUpload() {
                     borderTop: "1px solid var(--adm-border)",
                   }}
                 >
-                  {currentUpload.captain_name && (
-                    <div>
-                      <div className="adm-stat-label">Nahkoda</div>
-                      <div style={{ fontSize: 13 }}>
-                        {currentUpload.captain_name}
-                      </div>
-                    </div>
-                  )}
                   {currentUpload.abk_names && (
                     <div>
                       <div className="adm-stat-label">Crew / ABK</div>
