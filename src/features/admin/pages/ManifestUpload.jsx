@@ -1244,12 +1244,29 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                   color: "#fff",
                   border: "none",
                 }}
-                onClick={() =>
-                  window.open(
-                    `${API_URL}/api/admin/manifest/export-excel/${upload.id}`,
-                    "_blank",
-                  )
-                }
+                onClick={async () => {
+                  try {
+                    const response = await api.get(
+                      `/api/admin/manifest/export-excel/${upload.id}`,
+                      { auth: true, responseType: "blob" },
+                    );
+                    const url = window.URL.createObjectURL(
+                      new Blob([response.data]),
+                    );
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.setAttribute(
+                      "download",
+                      `manifest-${upload.boat_name}-${upload.trip_date}.xlsx`,
+                    );
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    window.URL.revokeObjectURL(url);
+                  } catch (err) {
+                    toast.error("Failed to download manifest: " + err.message);
+                  }
+                }}
                 title="Download manifest final Excel (only available after confirmation)"
               >
                 📥 Manifest Final
