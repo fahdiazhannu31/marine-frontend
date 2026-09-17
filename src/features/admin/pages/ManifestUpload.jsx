@@ -1235,6 +1235,26 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                 <>📧 Send All Group QR</>
               )}
             </button>
+            {/* Download Manifest Final — only if confirmed */}
+            {upload.status === "confirmed" && (
+              <button
+                className="adm-btn adm-btn-sm"
+                style={{
+                  background: "#FF9800",
+                  color: "#fff",
+                  border: "none",
+                }}
+                onClick={() =>
+                  window.open(
+                    `${API_URL}/api/admin/manifest/${upload.id}/export-excel`,
+                    "_blank",
+                  )
+                }
+                title="Download manifest final Excel (only available after confirmation)"
+              >
+                📥 Manifest Final
+              </button>
+            )}
           </>
         )}
         <span
