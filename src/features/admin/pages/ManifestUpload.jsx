@@ -1246,7 +1246,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                 }}
                 onClick={() =>
                   window.open(
-                    `${API_URL}/api/admin/manifest/${upload.id}/export-excel`,
+                    `${API_URL}/api/admin/manifest/export-excel/${upload.id}`,
                     "_blank",
                   )
                 }
