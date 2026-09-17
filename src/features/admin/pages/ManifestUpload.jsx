@@ -67,7 +67,7 @@ function scheduleLabel(s) {
   return `${t} — ${s.boat_name || "?"} — ${d}`;
 }
 
-const TABS = ["Upload", "Tickets", "Baggage"];
+const TABS = ["Upload", "Tickets", "Baggage", "Manifest Final"];
 
 // ── SeatMap with Group Highlight ─────────────────────────────────────────────
 // Using YachtSeatMap component for proper boat layouts including MOLA-MOLA
@@ -3214,6 +3214,64 @@ export default function ManifestUpload() {
             baggage={currentBaggage}
             onRefresh={refreshDetail}
           />
+        ))}
+
+      {tab === "Manifest Final" &&
+        (!selectedId ? (
+          <div className="adm-alert adm-alert-info">
+            Select a manifest from the Upload tab to view final manifest.
+          </div>
+        ) : !detail ? (
+          <div className="adm-loading">Loading…</div>
+        ) : currentUpload.status !== "confirmed" ? (
+          <div className="adm-alert adm-alert-warning">
+            Manifest must be confirmed before downloading final manifest Excel.
+          </div>
+        ) : (
+          <div className="adm-card">
+            <h3 style={{ marginBottom: 16 }}>Download Manifest Final</h3>
+            <p
+              style={{
+                fontSize: 14,
+                color: "var(--adm-text-muted)",
+                marginBottom: 20,
+              }}
+            >
+              Download manifest final Excel untuk manifest{" "}
+              <strong>{currentUpload.boat_name}</strong> tanggal{" "}
+              <strong>{currentUpload.trip_date}</strong> (
+              {currentTickets.length} penumpang).
+            </p>
+            <button
+              className="adm-btn adm-btn-primary"
+              onClick={async () => {
+                try {
+                  const response = await api.get(
+                    `/api/admin/manifest/export-excel/${currentUpload.id}`,
+                    { auth: true, responseType: "blob" },
+                  );
+                  const url = window.URL.createObjectURL(
+                    new Blob([response.data]),
+                  );
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.setAttribute(
+                    "download",
+                    `manifest-${currentUpload.boat_name}-${currentUpload.trip_date}.xlsx`,
+                  );
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+                  toast.success("Manifest downloaded successfully!");
+                } catch (err) {
+                  toast.error("Failed to download manifest: " + err.message);
+                }
+              }}
+            >
+              📥 Download Manifest Final Excel
+            </button>
+          </div>
         ))}
 
       {tab === "Boats" && <BoatCrewPanel />}
