@@ -2535,9 +2535,6 @@ function UploadList({ uploads, selectedId, onSelect, onDelete }) {
               <td style={{ fontWeight: 700 }}>#{u.id}</td>
               <td>
                 <div className="adm-cell-primary">{u.boat_name}</div>
-                {u.captain_name && (
-                  <div className="adm-cell-muted">Kapten: {u.captain_name}</div>
-                )}
               </td>
               <td>{fmtDate(u.schedule_date || u.trip_date)}</td>
               <td>
