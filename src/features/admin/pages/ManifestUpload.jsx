@@ -3116,9 +3116,9 @@ export default function ManifestUpload() {
                           ? crewAssignments.abk.map((c) => c.name).join(", ")
                           : (() => {
                               try {
-                                return JSON.parse(
-                                  currentUpload.abk_names,
-                                ).join(", ");
+                                return JSON.parse(currentUpload.abk_names).join(
+                                  ", ",
+                                );
                               } catch {
                                 return currentUpload.abk_names;
                               }
@@ -3156,17 +3156,6 @@ export default function ManifestUpload() {
                         {crewAssignments?.guard
                           ? crewAssignments.guard.map((c) => c.name).join(", ")
                           : currentUpload.guard_name}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-                  )}
-                  {currentUpload.guard_name && (
-                    <div>
-                      <div className="adm-stat-label">Guard</div>
-                      <div style={{ fontSize: 13 }}>
-                        {currentUpload.guard_name}
                       </div>
                     </div>
                   )}
