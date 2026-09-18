@@ -142,7 +142,9 @@ function TicketRow({ ticket, seq, seatVisible }) {
         {ticket.agent || "—"}
       </td>
       <td style={{ ...tdStyle(), fontSize: 11 }}>{ticket.package || "—"}</td>
-      <td style={tdStyle("center")}>{ticket.pax_count || "—"}</td>
+      <td style={tdStyle("center")}>
+        {ticket.pax_count_display || ticket.pax_count || "—"}
+      </td>
       <td style={{ ...tdStyle(), fontSize: 11, color: "#888" }}>
         {ticket.notes || "—"}
       </td>
