@@ -52,12 +52,10 @@ function fmtDate(v) {
   if (!v) return "-";
   // Database stores in WIB/local time, parse as-is (no timezone conversion)
   const date = new Date(v.replace(" ", "T"));
-  return date.toLocaleString("id-ID", {
+  return date.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 }
 
