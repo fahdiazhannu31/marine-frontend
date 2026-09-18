@@ -2929,6 +2929,7 @@ export default function ManifestUpload() {
   const currentUpload = detail?.upload || null;
   const currentTickets = detail?.tickets || [];
   const currentBaggage = detail?.baggage || [];
+  const crewAssignments = detail?.crew_assignments || {};
 
   return (
     <div className="adm-page">
@@ -3061,7 +3062,10 @@ export default function ManifestUpload() {
                 </div>
                 <div>
                   <div className="adm-stat-label">Tanggal</div>
-                  <div>{fmtDate(currentUpload.trip_date)}</div>
+                  <div>
+                    {fmtDateTime(currentUpload.schedule_date) ||
+                      fmtDate(currentUpload.trip_date)}
+                  </div>
                 </div>
                 <div>
                   <div className="adm-stat-label">Status</div>
@@ -3072,10 +3076,17 @@ export default function ManifestUpload() {
                   </span>
                 </div>
               </div>
-              {/* Row 2 – crew info (only if any exists) */}
-              {(currentUpload.captain_name ||
+              {/* Row 2 – crew info (dynamic from crew_assignments + fallback to upload fields) */}
+              {(crewAssignments?.captain ||
+                crewAssignments?.abk ||
+                crewAssignments?.gro ||
+                crewAssignments?.kkm ||
+                crewAssignments?.guard ||
+                currentUpload.captain_name ||
                 currentUpload.abk_names ||
-                currentUpload.gro_name) && (
+                currentUpload.gro_name ||
+                currentUpload.kkm_name ||
+                currentUpload.guard_name) && (
                 <div
                   style={{
                     display: "flex",
@@ -3085,17 +3096,69 @@ export default function ManifestUpload() {
                     borderTop: "1px solid var(--adm-border)",
                   }}
                 >
-                  {currentUpload.abk_names && (
+                  {/* Captain - prioritize crew_assignments (dynamic), fallback to upload.captain_name */}
+                  {(crewAssignments?.captain?.[0]?.name ||
+                    currentUpload.captain_name) && (
+                    <div>
+                      <div className="adm-stat-label">Captain</div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>
+                        {crewAssignments?.captain?.[0]?.name ||
+                          currentUpload.captain_name}
+                      </div>
+                    </div>
+                  )}
+                  {/* ABK - prioritize crew_assignments, fallback to upload.abk_names */}
+                  {(crewAssignments?.abk || currentUpload.abk_names) && (
                     <div>
                       <div className="adm-stat-label">Crew / ABK</div>
                       <div style={{ fontSize: 13 }}>
-                        {(() => {
-                          try {
-                            return JSON.parse(currentUpload.abk_names).join(
-                              ", ",
-                            );
-                          } catch {
-                            return currentUpload.abk_names;
+                        {crewAssignments?.abk
+                          ? crewAssignments.abk.map((c) => c.name).join(", ")
+                          : (() => {
+                              try {
+                                return JSON.parse(
+                                  currentUpload.abk_names,
+                                ).join(", ");
+                              } catch {
+                                return currentUpload.abk_names;
+                              }
+                            })()}
+                      </div>
+                    </div>
+                  )}
+                  {/* GRO */}
+                  {(crewAssignments?.gro || currentUpload.gro_name) && (
+                    <div>
+                      <div className="adm-stat-label">GRO</div>
+                      <div style={{ fontSize: 13 }}>
+                        {crewAssignments?.gro
+                          ? crewAssignments.gro.map((c) => c.name).join(", ")
+                          : currentUpload.gro_name}
+                      </div>
+                    </div>
+                  )}
+                  {/* KKM */}
+                  {(crewAssignments?.kkm || currentUpload.kkm_name) && (
+                    <div>
+                      <div className="adm-stat-label">KKM</div>
+                      <div style={{ fontSize: 13 }}>
+                        {crewAssignments?.kkm
+                          ? crewAssignments.kkm.map((c) => c.name).join(", ")
+                          : currentUpload.kkm_name}
+                      </div>
+                    </div>
+                  )}
+                  {/* GUARD */}
+                  {(crewAssignments?.guard || currentUpload.guard_name) && (
+                    <div>
+                      <div className="adm-stat-label">Guard</div>
+                      <div style={{ fontSize: 13 }}>
+                        {crewAssignments?.guard
+                          ? crewAssignments.guard.map((c) => c.name).join(", ")
+                          : currentUpload.guard_name}
+                      </div>
+                    </div>
+                  )}
                           }
                         })()}
                       </div>
