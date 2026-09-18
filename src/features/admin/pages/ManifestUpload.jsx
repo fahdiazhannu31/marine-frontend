@@ -3159,26 +3159,8 @@ export default function ManifestUpload() {
                       </div>
                     </div>
                   )}
-                          }
-                        })()}
-                      </div>
-                    </div>
-                  )}
-                  {currentUpload.gro_name && (
-                    <div>
-                      <div className="adm-stat-label">GRO</div>
-                      <div style={{ fontSize: 13 }}>
-                        {currentUpload.gro_name}
-                      </div>
-                    </div>
-                  )}
-                  {currentUpload.kkm_name && (
-                    <div>
-                      <div className="adm-stat-label">KKM</div>
-                      <div style={{ fontSize: 13 }}>
-                        {currentUpload.kkm_name}
-                      </div>
-                    </div>
+                </div>
+              )}
                   )}
                   {currentUpload.guard_name && (
                     <div>
