@@ -50,12 +50,25 @@ import {
 
 function fmtDate(v) {
   if (!v) return "-";
-  // Database stores in WIB/local time, parse as-is (no timezone conversion)
+  // For DATE fields (without time) - show date only
   const date = new Date(v.replace(" ", "T"));
   return date.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",
+  });
+}
+
+function fmtDateTime(v) {
+  if (!v) return "-";
+  // For DATETIME fields - show date and time
+  const date = new Date(v.replace(" ", "T"));
+  return date.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -2571,7 +2584,7 @@ function UploadList({ uploads, selectedId, onSelect, onDelete }) {
               <td>
                 <div className="adm-cell-primary">{u.boat_name}</div>
               </td>
-              <td>{fmtDate(u.schedule_date || u.trip_date)}</td>
+              <td>{fmtDateTime(u.schedule_date) || fmtDate(u.trip_date)}</td>
               <td>
                 <span
                   className={`adm-badge ${u.direction === "RETURN" ? "adm-badge-info" : "adm-badge-warning"}`}
