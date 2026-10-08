@@ -947,13 +947,21 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const handleSendGroupQrEmails = async () => {
     setSendingEmails(true);
     try {
-      // For now, send without group_emails (backend will log warning)
-      // TODO: collect emails from booking system or prompt user
-      const result = await sendGroupQrEmails(upload.id, {});
+      // Build group_emails map from tickets already loaded in state
+      // Key = group_name, Value = first non-empty email found in that group
+      const groupEmailsMap = {};
+      (currentTickets || []).forEach((t) => {
+        const grp = t.group_name || t.passenger_name;
+        if (grp && t.email && !groupEmailsMap[grp]) {
+          groupEmailsMap[grp] = t.email;
+        }
+      });
+
+      const result = await sendGroupQrEmails(upload.id, groupEmailsMap);
       toast.success(
         `✉️ Sent ${result.sent_count} emails to ${result.total_groups} groups`,
       );
-      if (result.failed_groups.length > 0) {
+      if (result.failed_groups && result.failed_groups.length > 0) {
         toast.warning(
           `Gagal ${result.failed_groups.length}: ${result.failed_groups.join(", ")}`,
         );
