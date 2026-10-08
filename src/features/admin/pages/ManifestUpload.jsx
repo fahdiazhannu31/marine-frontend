@@ -947,10 +947,9 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const handleSendGroupQrEmails = async () => {
     setSendingEmails(true);
     try {
-      // Build group_emails map from tickets already loaded in state
-      // Key = group_name, Value = first non-empty email found in that group
+      // Build group_emails map from tickets prop (passed to TicketsPanel)
       const groupEmailsMap = {};
-      (currentTickets || []).forEach((t) => {
+      (tickets || []).forEach((t) => {
         const grp = t.group_name || t.passenger_name;
         if (grp && t.email && !groupEmailsMap[grp]) {
           groupEmailsMap[grp] = t.email;
