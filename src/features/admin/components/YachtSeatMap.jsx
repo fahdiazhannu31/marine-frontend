@@ -99,6 +99,129 @@ const BOAT_LAYOUTS = {
     ],
   },
 
+  // ── MARINA SRIKANDI 2 (id will be set after INSERT) ─────────────────────
+  // Layout BAWAH deck:
+  //   [L#] [D E]   [aisle] [A B]   [R#]  — rows 1-2
+  //   [L#] [D E F] [aisle] [A B C] [R#]  — rows 3-14
+  //   [R. GENSET]          [TOILET]        — row 15 (no seats)
+  // Outer seats: L1-L14 (left wall), R1-R14 (right wall)
+  "marina-srikandi-2": {
+    name: "MARINA SRIKANDI 2",
+    shape: "pointed",
+    captainArea: true,
+    hasOuterSeats: true, // flag for renderer to show outer columns
+    rows: [
+      // Baris 1-2: only D,E kiri | A,B kanan
+      {
+        row: 1,
+        outerLeft: "L1",
+        left: ["D", "E"],
+        right: ["A", "B"],
+        outerRight: "R1",
+      },
+      {
+        row: 2,
+        outerLeft: "L2",
+        left: ["D", "E"],
+        right: ["A", "B"],
+        outerRight: "R2",
+      },
+      // Baris 3-14: D,E,F kiri | A,B,C kanan
+      {
+        row: 3,
+        outerLeft: "L3",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R3",
+      },
+      {
+        row: 4,
+        outerLeft: "L4",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R4",
+      },
+      {
+        row: 5,
+        outerLeft: "L5",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R5",
+      },
+      {
+        row: 6,
+        outerLeft: "L6",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R6",
+      },
+      {
+        row: 7,
+        outerLeft: "L7",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R7",
+      },
+      {
+        row: 8,
+        outerLeft: "L8",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R8",
+      },
+      {
+        row: 9,
+        outerLeft: "L9",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R9",
+      },
+      {
+        row: 10,
+        outerLeft: "L10",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R10",
+      },
+      {
+        row: 11,
+        outerLeft: "L11",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R11",
+      },
+      {
+        row: 12,
+        outerLeft: "L12",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R12",
+      },
+      {
+        row: 13,
+        outerLeft: "L13",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R13",
+      },
+      {
+        row: 14,
+        outerLeft: "L14",
+        left: ["D", "E", "F"],
+        right: ["A", "B", "C"],
+        outerRight: "R14",
+      },
+      // Baris 15: R. GENSET + TOILET (no seats)
+      {
+        row: 15,
+        outerLeft: null,
+        left: [{ type: "special", label: "R. GENSET" }],
+        right: [{ type: "special", label: "TOILET" }],
+        outerRight: null,
+      },
+    ],
+  },
+
   // ── MOLA-MOLA / MARINA SRIKANDI (id 14) ──────────────────────────────────
   // BAWAH deck: rows 1-14
   // - Row 1: ABC (left) | gap (center) | DEF (right) - 6 seats total
@@ -560,6 +683,24 @@ export default function YachtSeatMap({
 
         {/* Captain area — positioned in same grid as seat rows */}
         {layout.captainArea && (
+
+    const bowClass = getBowClass(boatId, layout.name);
+
+    return (
+      <div
+        className={`floor-plan floor-plan-boat shape-${layout.shape} ${bowClass}`}
+      >
+        {/* Bow — always shows NAMA MARINE branding */}
+        <div className="fp-bow">
+          <div className="fp-bow-logo">
+            <span className="fp-bow-brand-nama">NAMA</span>
+            <span className="fp-bow-brand-dot" />
+            <span className="fp-bow-brand-marine">Marine</span>
+          </div>
+        </div>
+
+        {/* Captain area — positioned in same grid as seat rows */}
+        {layout.captainArea && (
           <div className="fp-rows fp-captain-row-wrap">
             <div className="fp-row-with-number">
               <div className="fp-row">
@@ -597,12 +738,32 @@ export default function YachtSeatMap({
 
         {/* BAWAH seat rows — row numbers OUTSIDE on RIGHT */}
         <div className="fp-rows">
-          {bawahRows.map(({ row, left, right }) => (
+          {bawahRows.map(({ row, left, right, outerLeft, outerRight }) => (
             <div key={row} className="fp-row-with-number">
-              <div className="fp-row">
+              <div className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}>
+                {/* Outer left seat (e.g. L1, L2...) */}
+                {layout.hasOuterSeats && (
+                  <div className="fp-outer fp-outer-left">
+                    {outerLeft ? (
+                      renderSeat(outerLeft)
+                    ) : (
+                      <div className="fp-outer-empty" />
+                    )}
+                  </div>
+                )}
                 {renderLeftSide(row, left)}
                 <div className="fp-aisle" />
                 {renderRightSide(row, right)}
+                {/* Outer right seat (e.g. R1, R2...) */}
+                {layout.hasOuterSeats && (
+                  <div className="fp-outer fp-outer-right">
+                    {outerRight ? (
+                      renderSeat(outerRight)
+                    ) : (
+                      <div className="fp-outer-empty" />
+                    )}
+                  </div>
+                )}
               </div>
               <div className="fp-row-num-outside">{row}</div>
             </div>
@@ -654,6 +815,15 @@ export default function YachtSeatMap({
   };
 
   const layout = boatId ? BOAT_LAYOUTS[boatId] : null;
+  // Also try lookup by boat name for boats without fixed ID (e.g. Marina Srikandi 2)
+  const layoutByName = !layout
+    ? Object.values(BOAT_LAYOUTS).find((l) => {
+        const boatNameLower = (seats[0]?.boat_name || "").toLowerCase();
+        return l.name?.toLowerCase() === boatNameLower ||
+               boatNameLower.includes("marina srikandi 2");
+      })
+    : null;
+  const resolvedLayout = layout || layoutByName;
 
   return (
     <div className="yacht-seat-map">
@@ -683,7 +853,7 @@ export default function YachtSeatMap({
       </div>
 
       {/* Floor plan */}
-      {layout ? renderBoatLayout(layout) : renderGenericGrid()}
+      {resolvedLayout ? renderBoatLayout(resolvedLayout) : renderGenericGrid()}
 
       {/* Selection counter */}
       {maxSeats && (

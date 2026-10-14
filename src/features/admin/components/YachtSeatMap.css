@@ -305,6 +305,31 @@
   flex: 1;
 }
 
+/* Marina Srikandi 2: outer seats on both sides */
+.fp-row.has-outer {
+  grid-template-columns: auto 1fr auto 1fr auto;
+}
+
+/* Outer seat column (single seat on wall, left or right) */
+.fp-outer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fp-outer-left {
+  margin-right: 4px;
+}
+
+.fp-outer-right {
+  margin-left: 4px;
+}
+
+.fp-outer-empty {
+  width: 32px;
+  height: 32px;
+}
+
 /* Row number displayed OUTSIDE floor plan on the RIGHT side */
 .fp-row-num-outside {
   min-width: 32px;
