@@ -247,6 +247,7 @@ function SeatMap({ tickets, upload, highlightedGroup, onClearHighlight }) {
         bookedSeats={bookedSeats}
         isLocked={true}
         boatId={upload?.boat_id || null}
+        boatName={upload?.boat_name || null}
         highlightMode={!!highlightedGroup}
       />
     </div>

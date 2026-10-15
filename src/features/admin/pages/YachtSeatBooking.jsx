@@ -34,6 +34,7 @@ export default function YachtSeatBooking() {
   const [showBoardingPass, setShowBoardingPass] = useState(false);
   const [ticketData, setTicketData] = useState(null); // Backend ticket data
   const [resolvedBoatId, setResolvedBoatId] = useState(null); // boat_id resolved from seats data
+  const [resolvedBoatName, setResolvedBoatName] = useState(null); // boat_name for layout lookup
 
   // Load settled bookings
   useEffect(() => {
@@ -98,10 +99,14 @@ export default function YachtSeatBooking() {
       const seatsData = await fetchYachtSeats(scheduleId);
       setSeats(seatsData);
 
-      // Resolve boat_id dari seats data (seat table has boat_id)
+      // Resolve boat_id dan boat_name dari seats data
       const boatIdFromSeats =
         seatsData.length > 0 ? Number(seatsData[0].boat_id) : null;
       setResolvedBoatId(boatIdFromSeats);
+      // Also store boat_name for name-based layout lookup
+      const boatNameFromSeats =
+        seatsData.length > 0 ? seatsData[0].boat_name || null : null;
+      setResolvedBoatName(boatNameFromSeats);
 
       // Fetch already booked seats
       const paymentId = booking.id;
@@ -155,6 +160,7 @@ export default function YachtSeatBooking() {
     setShowBoardingPass(false); // Reset boarding pass view when changing booking
     setTicketData(null); // Clear ticket data
     setResolvedBoatId(null); // Reset boat layout until seats load
+    setResolvedBoatName(null);
     // For round trip, default to departure
     if (booking.trip_type === "round_trip") {
       setSelectedScheduleType("departure");
@@ -324,192 +330,191 @@ export default function YachtSeatBooking() {
 
       {status === "ready" && (
         <div className="booking-layout">
-            {/* Left: Bookings list */}
-            <section className="bookings-section">
-              <h2>Settled Bookings</h2>
+          {/* Left: Bookings list */}
+          <section className="bookings-section">
+            <h2>Settled Bookings</h2>
 
-              {bookings.length === 0 ? (
-                <p className="adm-empty">No settled bookings found</p>
-              ) : (
-                <div className="bookings-list">
-                  {bookings.map((booking) => (
-                    <button
-                      key={booking.id}
-                      className={`booking-card ${
-                        selectedBooking?.id === booking.id ? "active" : ""
-                      }`}
-                      onClick={() => handleSelectBooking(booking)}
-                    >
-                      <div className="booking-info">
-                        <div className="booking-id">#{booking.id}</div>
-                        <div className="booking-user">
-                          {booking.group_name || booking.user_name}
-                        </div>
-                        <div className="booking-pax">
-                          {booking.jml_pax || booking.pax_count} pax
-                        </div>
-                        {booking.boat_name && (
-                          <div className="booking-boat">
-                            🚢 {booking.boat_name}
-                          </div>
-                        )}
-                        {booking.trip_type === "round_trip" && (
-                          <div className="booking-trip">🔄 Round Trip</div>
-                        )}
-                        <div className="booking-price">
-                          {formatRupiah(booking.amount)}
-                        </div>
+            {bookings.length === 0 ? (
+              <p className="adm-empty">No settled bookings found</p>
+            ) : (
+              <div className="bookings-list">
+                {bookings.map((booking) => (
+                  <button
+                    key={booking.id}
+                    className={`booking-card ${
+                      selectedBooking?.id === booking.id ? "active" : ""
+                    }`}
+                    onClick={() => handleSelectBooking(booking)}
+                  >
+                    <div className="booking-info">
+                      <div className="booking-id">#{booking.id}</div>
+                      <div className="booking-user">
+                        {booking.group_name || booking.user_name}
                       </div>
-                      <div className="booking-status">
-                        <span className="status-badge status-settled">
-                          {booking.status}
-                        </span>
+                      <div className="booking-pax">
+                        {booking.jml_pax || booking.pax_count} pax
                       </div>
-                    </button>
-                  ))}
+                      {booking.boat_name && (
+                        <div className="booking-boat">
+                          🚢 {booking.boat_name}
+                        </div>
+                      )}
+                      {booking.trip_type === "round_trip" && (
+                        <div className="booking-trip">🔄 Round Trip</div>
+                      )}
+                      <div className="booking-price">
+                        {formatRupiah(booking.amount)}
+                      </div>
+                    </div>
+                    <div className="booking-status">
+                      <span className="status-badge status-settled">
+                        {booking.status}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Right: Seat assignment */}
+          {selectedBooking && (
+            <section className="seat-assignment-section">
+              <div className="assignment-header">
+                <h2>Assign Seats</h2>
+                <p className="booking-summary">
+                  Booking #{selectedBooking.id} •{" "}
+                  {selectedBooking.jml_pax || selectedBooking.pax_count} pax •{" "}
+                  {selectedBooking.group_name || selectedBooking.user_name}
+                </p>
+                {selectedBooking.trip_type === "round_trip" && (
+                  <p className="trip-type-badge">🔄 Round Trip</p>
+                )}
+                {selectedBooking.boat_name && (
+                  <p className="boat-info">🚢 {selectedBooking.boat_name}</p>
+                )}
+              </div>
+
+              {Array.isArray(selectedBooking.passengers) &&
+                selectedBooking.passengers.length > 0 && (
+                  <div className="adm-alert adm-alert-info">
+                    <strong>Passenger order:</strong> click seats in this order
+                    so each name/NIK lines up with the right seat —{" "}
+                    {selectedBooking.passengers
+                      .map(
+                        (p, i) =>
+                          `${i + 1}. ${p.name}${p.nik ? ` (NIK: ${p.nik})` : ""}`,
+                      )
+                      .join("  ·  ")}
+                  </div>
+                )}
+
+              {/* Round trip selector */}
+              {selectedBooking.trip_type === "round_trip" && (
+                <ScheduleSelector
+                  selectedType={selectedScheduleType}
+                  onTypeChange={handleScheduleTypeChange}
+                />
+              )}
+
+              {/* Capacity check result */}
+              {capacityError && (
+                <div className="adm-alert adm-alert-warning">
+                  {capacityError}
                 </div>
               )}
-            </section>
 
-            {/* Right: Seat assignment */}
-            {selectedBooking && (
-              <section className="seat-assignment-section">
-                <div className="assignment-header">
-                  <h2>Assign Seats</h2>
-                  <p className="booking-summary">
-                    Booking #{selectedBooking.id} •{" "}
-                    {selectedBooking.jml_pax || selectedBooking.pax_count} pax •{" "}
-                    {selectedBooking.group_name || selectedBooking.user_name}
-                  </p>
-                  {selectedBooking.trip_type === "round_trip" && (
-                    <p className="trip-type-badge">🔄 Round Trip</p>
-                  )}
-                  {selectedBooking.boat_name && (
-                    <p className="boat-info">🚢 {selectedBooking.boat_name}</p>
-                  )}
+              {/* Seat lock warning */}
+              {seatsAlreadyAssigned && (
+                <div className="adm-alert adm-alert-warning">
+                  🔒 Seats already assigned. Editing disabled.
                 </div>
+              )}
 
-                {Array.isArray(selectedBooking.passengers) &&
-                  selectedBooking.passengers.length > 0 && (
-                    <div className="adm-alert adm-alert-info">
-                      <strong>Passenger order:</strong> click seats in this
-                      order so each name/NIK lines up with the right seat —{" "}
-                      {selectedBooking.passengers
-                        .map(
-                          (p, i) =>
-                            `${i + 1}. ${p.name}${p.nik ? ` (NIK: ${p.nik})` : ""}`,
-                        )
-                        .join("  ·  ")}
-                    </div>
-                  )}
+              {errorMsg && (
+                <div className="adm-alert adm-alert-danger">{errorMsg}</div>
+              )}
 
-                {/* Round trip selector */}
-                {selectedBooking.trip_type === "round_trip" && (
-                  <ScheduleSelector
-                    selectedType={selectedScheduleType}
-                    onTypeChange={handleScheduleTypeChange}
-                  />
+              {assignStatus === "success" && (
+                <div className="adm-alert adm-alert-success">
+                  Seats assigned successfully!
+                </div>
+              )}
+
+              <YachtSeatMap
+                seats={seats}
+                selectedSeats={selectedSeats}
+                onSeatToggle={handleSeatToggle}
+                maxSeats={parseInt(
+                  selectedBooking.jml_pax || selectedBooking.pax_count,
+                  10,
                 )}
+                paymentId={selectedBooking.id}
+                bookedSeats={bookedSeats}
+                isLocked={seatsAlreadyAssigned}
+                boatId={resolvedBoatId}
+                boatName={resolvedBoatName}
+              />
 
-                {/* Capacity check result */}
-                {capacityError && (
-                  <div className="adm-alert adm-alert-warning">
-                    {capacityError}
-                  </div>
-                )}
+              <div className="assignment-actions">
+                <button
+                  className="adm-btn adm-btn-primary"
+                  onClick={handleAssignSeats}
+                  disabled={
+                    selectedSeats.length === 0 ||
+                    assignStatus === "loading" ||
+                    seatsAlreadyAssigned ||
+                    !!capacityError ||
+                    selectedSeats.length !==
+                      parseInt(
+                        selectedBooking.jml_pax || selectedBooking.pax_count,
+                        10,
+                      )
+                  }
+                >
+                  {seatsAlreadyAssigned
+                    ? "🔒 Already Assigned"
+                    : assignStatus === "loading"
+                      ? "Assigning..."
+                      : `Assign Seats (${selectedSeats.length}/${parseInt(selectedBooking.jml_pax || selectedBooking.pax_count, 10)})`}
+                </button>
 
-                {/* Seat lock warning */}
-                {seatsAlreadyAssigned && (
-                  <div className="adm-alert adm-alert-warning">
-                    🔒 Seats already assigned. Editing disabled.
-                  </div>
-                )}
+                <button
+                  className="adm-btn adm-btn-secondary"
+                  onClick={handlePrintTicket}
+                  disabled={!selectedBooking}
+                >
+                  Print Ticket
+                </button>
 
-                {errorMsg && (
-                  <div className="adm-alert adm-alert-danger">
-                    {errorMsg}
-                  </div>
-                )}
+                <button
+                  className="adm-btn adm-btn-secondary"
+                  onClick={handlePrintBoardingPass}
+                  disabled={!selectedBooking}
+                >
+                  🎫 Print Boarding Pass
+                </button>
+              </div>
 
-                {assignStatus === "success" && (
-                  <div className="adm-alert adm-alert-success">
-                    Seats assigned successfully!
-                  </div>
-                )}
-
-                <YachtSeatMap
-                  seats={seats}
-                  selectedSeats={selectedSeats}
-                  onSeatToggle={handleSeatToggle}
-                  maxSeats={parseInt(
-                    selectedBooking.jml_pax || selectedBooking.pax_count,
-                    10,
-                  )}
-                  paymentId={selectedBooking.id}
-                  bookedSeats={bookedSeats}
-                  isLocked={seatsAlreadyAssigned}
-                  boatId={resolvedBoatId}
+              {showTicket && ticketData && (
+                <TicketPreview
+                  booking={ticketData}
+                  seats={ticketData.seats || []}
+                  onPrint={() => {}}
+                  onClose={() => setShowTicket(false)}
                 />
+              )}
 
-                <div className="assignment-actions">
-                  <button
-                    className="adm-btn adm-btn-primary"
-                    onClick={handleAssignSeats}
-                    disabled={
-                      selectedSeats.length === 0 ||
-                      assignStatus === "loading" ||
-                      seatsAlreadyAssigned ||
-                      !!capacityError ||
-                      selectedSeats.length !==
-                        parseInt(
-                          selectedBooking.jml_pax || selectedBooking.pax_count,
-                          10,
-                        )
-                    }
-                  >
-                    {seatsAlreadyAssigned
-                      ? "🔒 Already Assigned"
-                      : assignStatus === "loading"
-                        ? "Assigning..."
-                        : `Assign Seats (${selectedSeats.length}/${parseInt(selectedBooking.jml_pax || selectedBooking.pax_count, 10)})`}
-                  </button>
-
-                  <button
-                    className="adm-btn adm-btn-secondary"
-                    onClick={handlePrintTicket}
-                    disabled={!selectedBooking}
-                  >
-                    Print Ticket
-                  </button>
-
-                  <button
-                    className="adm-btn adm-btn-secondary"
-                    onClick={handlePrintBoardingPass}
-                    disabled={!selectedBooking}
-                  >
-                    🎫 Print Boarding Pass
-                  </button>
-                </div>
-
-                {showTicket && ticketData && (
-                  <TicketPreview
-                    booking={ticketData}
-                    seats={ticketData.seats || []}
-                    onPrint={() => {}}
-                    onClose={() => setShowTicket(false)}
-                  />
-                )}
-
-                {showBoardingPass && ticketData && (
-                  <BoardingPass
-                    booking={ticketData}
-                    onClose={() => setShowBoardingPass(false)}
-                  />
-                )}
-              </section>
-            )}
-          </div>
-        )}
+              {showBoardingPass && ticketData && (
+                <BoardingPass
+                  booking={ticketData}
+                  onClose={() => setShowBoardingPass(false)}
+                />
+              )}
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }

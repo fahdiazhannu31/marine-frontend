@@ -431,6 +431,7 @@ export default function YachtSeatMap({
   bookedSeats = [],
   isLocked = false,
   boatId = null,
+  boatName = null,
   highlightMode = false,
 }) {
   const canSelectMore = !maxSeats || selectedSeats.length < maxSeats;
@@ -802,10 +803,15 @@ export default function YachtSeatMap({
   // Also try lookup by boat name for boats without fixed ID (e.g. Marina Srikandi 2)
   const layoutByName = !layout
     ? Object.values(BOAT_LAYOUTS).find((l) => {
-        const boatNameLower = (seats[0]?.boat_name || "").toLowerCase();
+        // Priority 1: use explicit boatName prop (passed from parent)
+        const nameToCheck = (boatName || seats[0]?.boat_name || "")
+          .toLowerCase()
+          .trim();
+        if (!nameToCheck) return false;
         return (
-          l.name?.toLowerCase() === boatNameLower ||
-          boatNameLower.includes("marina srikandi 2")
+          l.name?.toLowerCase() === nameToCheck ||
+          nameToCheck.includes("marina srikandi 2") ||
+          nameToCheck.includes("marina srikandi2")
         );
       })
     : null;
