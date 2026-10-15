@@ -101,123 +101,36 @@ const BOAT_LAYOUTS = {
 
   // ── MARINA SRIKANDI 2 (id will be set after INSERT) ─────────────────────
   // Layout BAWAH deck:
-  //   [L#] [D E]   [aisle] [A B]   [R#]  — rows 1-2
-  //   [L#] [D E F] [aisle] [A B C] [R#]  — rows 3-14
-  //   [R. GENSET]          [TOILET]        — row 15 (no seats)
-  // Outer seats: L1-L14 (left wall), R1-R14 (right wall)
+  //   [D E]   [aisle] [A B]    — rows 1-2
+  //   [D E F] [aisle] [A B C]  — rows 3-14
+  //   [R. GENSET]     [TOILET] — row 15 (no seats)
   "marina-srikandi-2": {
     name: "MARINA SRIKANDI 2",
     shape: "pointed",
     captainArea: true,
-    hasOuterSeats: true, // flag for renderer to show outer columns
+    hasOuterSeats: false,
     rows: [
-      // Baris 1-2: only D,E kiri | A,B kanan
-      {
-        row: 1,
-        outerLeft: "L1",
-        left: ["D", "E"],
-        right: ["A", "B"],
-        outerRight: "R1",
-      },
-      {
-        row: 2,
-        outerLeft: "L2",
-        left: ["D", "E"],
-        right: ["A", "B"],
-        outerRight: "R2",
-      },
+      // Baris 1-2: D,E kiri | A,B kanan
+      { row: 1, left: ["D", "E"], right: ["A", "B"] },
+      { row: 2, left: ["D", "E"], right: ["A", "B"] },
       // Baris 3-14: D,E,F kiri | A,B,C kanan
-      {
-        row: 3,
-        outerLeft: "L3",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R3",
-      },
-      {
-        row: 4,
-        outerLeft: "L4",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R4",
-      },
-      {
-        row: 5,
-        outerLeft: "L5",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R5",
-      },
-      {
-        row: 6,
-        outerLeft: "L6",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R6",
-      },
-      {
-        row: 7,
-        outerLeft: "L7",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R7",
-      },
-      {
-        row: 8,
-        outerLeft: "L8",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R8",
-      },
-      {
-        row: 9,
-        outerLeft: "L9",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R9",
-      },
-      {
-        row: 10,
-        outerLeft: "L10",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R10",
-      },
-      {
-        row: 11,
-        outerLeft: "L11",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R11",
-      },
-      {
-        row: 12,
-        outerLeft: "L12",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R12",
-      },
-      {
-        row: 13,
-        outerLeft: "L13",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R13",
-      },
-      {
-        row: 14,
-        outerLeft: "L14",
-        left: ["D", "E", "F"],
-        right: ["A", "B", "C"],
-        outerRight: "R14",
-      },
+      { row: 3, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 4, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 5, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 6, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 7, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 8, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 9, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 10, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 11, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 12, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 13, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      { row: 14, left: ["D", "E", "F"], right: ["A", "B", "C"] },
       // Baris 15: R. GENSET + TOILET (no seats)
       {
         row: 15,
-        outerLeft: null,
         left: [{ type: "special", label: "R. GENSET" }],
         right: [{ type: "special", label: "TOILET" }],
-        outerRight: null,
       },
     ],
   },
