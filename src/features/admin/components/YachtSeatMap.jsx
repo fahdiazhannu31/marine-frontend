@@ -799,23 +799,46 @@ export default function YachtSeatMap({
     );
   };
 
-  const layout = boatId ? BOAT_LAYOUTS[boatId] : null;
-  // Also try lookup by boat name for boats without fixed ID (e.g. Marina Srikandi 2)
-  const layoutByName = !layout
-    ? Object.values(BOAT_LAYOUTS).find((l) => {
-        // Priority 1: use explicit boatName prop (passed from parent)
-        const nameToCheck = (boatName || seats[0]?.boat_name || "")
-          .toLowerCase()
-          .trim();
-        if (!nameToCheck) return false;
-        return (
+  // Resolve layout: name-based lookup takes priority over ID-based
+  // to avoid collision when a new boat gets the same numeric ID as an existing layout.
+  const nameToCheck = (boatName || seats[0]?.boat_name || "")
+    .toLowerCase()
+    .trim();
+
+  const layoutByName = nameToCheck
+    ? Object.values(BOAT_LAYOUTS).find(
+        (l) =>
           l.name?.toLowerCase() === nameToCheck ||
-          nameToCheck.includes("marina srikandi 2") ||
-          nameToCheck.includes("marina srikandi2")
-        );
-      })
+          (nameToCheck.includes("marina srikandi 2") &&
+            l.name === "MARINA SRIKANDI 2") ||
+          (nameToCheck.includes("marina srikandi2") &&
+            l.name === "MARINA SRIKANDI 2") ||
+          (nameToCheck.includes("la brisa") && l.name === "LA BRISA") ||
+          (nameToCheck.includes("la vela") && l.name === "LA VELA") ||
+          (nameToCheck.includes("la luna") && l.name === "LA LUNA") ||
+          (nameToCheck.includes("mola-mola") &&
+            l.name?.includes("MOLA-MOLA")) ||
+          (nameToCheck.includes("mola mola") && l.name?.includes("MOLA-MOLA")),
+      )
     : null;
-  const resolvedLayout = layout || layoutByName;
+
+  // Fall back to ID-based lookup only when name lookup gives no result
+  const layoutById = !layoutByName && boatId ? BOAT_LAYOUTS[boatId] : null;
+
+  // Extra guard: if ID-based result name doesn't match boatName at all, discard it
+  const layoutByIdSafe = (() => {
+    if (!layoutById || !nameToCheck) return layoutById;
+    const idLayoutName = layoutById.name?.toLowerCase() ?? "";
+    // If boatName contains "marina srikandi 2" but ID resolves to LA VELA / LA BRISA etc — reject
+    if (
+      nameToCheck.includes("marina srikandi 2") &&
+      !idLayoutName.includes("marina srikandi 2")
+    )
+      return null;
+    return layoutById;
+  })();
+
+  const resolvedLayout = layoutByName || layoutByIdSafe;
 
   return (
     <div className="yacht-seat-map">
