@@ -1469,14 +1469,14 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         <table className="adm-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Ket</th>
+              <th style={{ width: 40 }}>#</th>
+              <th style={{ width: 100 }}>Ket</th>
               <th>Nama Penumpang</th>
-              <th>Grup</th>
-              <th>NIK/Passport</th>
-              <th>Kursi</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th style={{ width: 140 }}>Grup</th>
+              <th style={{ width: 160 }}>NIK/Passport</th>
+              <th style={{ width: 80 }}>Kursi</th>
+              <th style={{ width: 90 }}>Status</th>
+              <th style={{ width: 120 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -1502,10 +1502,17 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                 >
                   {t.passenger_name}
                 </td>
-                <td style={{ color: "var(--adm-text-muted)", maxWidth: 140 }}>
+                <td
+                  style={{
+                    color: "var(--adm-text-muted)",
+                    maxWidth: 140,
+                    overflow: "hidden",
+                  }}
+                >
                   {t.group_name ? (
                     <button
                       onClick={() => setHighlightedGroup(t.group_name)}
+                      title={t.group_name}
                       style={{
                         background: "transparent",
                         border: "none",
@@ -1516,6 +1523,11 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                         padding: 0,
                         fontSize: "inherit",
                         fontFamily: "inherit",
+                        maxWidth: "100%",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        display: "block",
                       }}
                       onMouseEnter={(e) => {
                         e.target.style.color = "#764ba2";
@@ -1530,7 +1542,16 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                     "—"
                   )}
                 </td>
-                <td style={{ fontFamily: "monospace", fontSize: 12 }}>
+                <td
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    maxWidth: 160,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {t.id_passport || "—"}
                 </td>
                 <td>
