@@ -683,24 +683,6 @@ export default function YachtSeatMap({
 
         {/* Captain area — positioned in same grid as seat rows */}
         {layout.captainArea && (
-
-    const bowClass = getBowClass(boatId, layout.name);
-
-    return (
-      <div
-        className={`floor-plan floor-plan-boat shape-${layout.shape} ${bowClass}`}
-      >
-        {/* Bow — always shows NAMA MARINE branding */}
-        <div className="fp-bow">
-          <div className="fp-bow-logo">
-            <span className="fp-bow-brand-nama">NAMA</span>
-            <span className="fp-bow-brand-dot" />
-            <span className="fp-bow-brand-marine">Marine</span>
-          </div>
-        </div>
-
-        {/* Captain area — positioned in same grid as seat rows */}
-        {layout.captainArea && (
           <div className="fp-rows fp-captain-row-wrap">
             <div className="fp-row-with-number">
               <div className="fp-row">
@@ -740,7 +722,9 @@ export default function YachtSeatMap({
         <div className="fp-rows">
           {bawahRows.map(({ row, left, right, outerLeft, outerRight }) => (
             <div key={row} className="fp-row-with-number">
-              <div className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}>
+              <div
+                className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
+              >
                 {/* Outer left seat (e.g. L1, L2...) */}
                 {layout.hasOuterSeats && (
                   <div className="fp-outer fp-outer-left">
@@ -819,8 +803,10 @@ export default function YachtSeatMap({
   const layoutByName = !layout
     ? Object.values(BOAT_LAYOUTS).find((l) => {
         const boatNameLower = (seats[0]?.boat_name || "").toLowerCase();
-        return l.name?.toLowerCase() === boatNameLower ||
-               boatNameLower.includes("marina srikandi 2");
+        return (
+          l.name?.toLowerCase() === boatNameLower ||
+          boatNameLower.includes("marina srikandi 2")
+        );
       })
     : null;
   const resolvedLayout = layout || layoutByName;
