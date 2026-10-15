@@ -5,9 +5,16 @@ const BASE = "/api/admin/crew";
 
 // ── Crew CRUD ─────────────────────────────────────────────────────────────────
 
-export async function fetchCrew(role = null) {
-  const qs = role ? `?role=${role}` : "";
-  return api.get(`${BASE}${qs}`, { auth: true });
+export async function fetchCrew(
+  role = null,
+  { search = "", page = 1, limit = 20 } = {},
+) {
+  const params = new URLSearchParams();
+  if (role) params.set("role", role);
+  if (search) params.set("search", search);
+  params.set("page", page);
+  params.set("limit", limit);
+  return api.get(`${BASE}?${params}`, { auth: true });
 }
 
 export async function fetchCrewMember(id) {
@@ -33,9 +40,12 @@ export function getCrewQrPdfUrl(id) {
 
 // ── Assignments ───────────────────────────────────────────────────────────────
 
-export async function fetchAssignments({ date = null, scheduleId = null } = {}) {
+export async function fetchAssignments({
+  date = null,
+  scheduleId = null,
+} = {}) {
   const params = new URLSearchParams();
-  if (date)       params.set("date", date);
+  if (date) params.set("date", date);
   if (scheduleId) params.set("schedule_id", scheduleId);
   const qs = params.toString() ? `?${params}` : "";
   return api.get(`${BASE}/assignments${qs}`, { auth: true });
@@ -52,9 +62,19 @@ export async function deleteAssignment(id) {
 // ── Check-in ──────────────────────────────────────────────────────────────────
 
 export async function getCheckinByQr(qrCode) {
-  return api.get(`${BASE}/checkin-by-qr/${encodeURIComponent(qrCode)}`, { auth: true });
+  return api.get(`${BASE}/checkin-by-qr/${encodeURIComponent(qrCode)}`, {
+    auth: true,
+  });
 }
 
-export async function recordCrewCheckin({ qr_code, schedule_id = null, note = "" }) {
-  return api.post(`${BASE}/checkin`, { qr_code, schedule_id, note }, { auth: true });
+export async function recordCrewCheckin({
+  qr_code,
+  schedule_id = null,
+  note = "",
+}) {
+  return api.post(
+    `${BASE}/checkin`,
+    { qr_code, schedule_id, note },
+    { auth: true },
+  );
 }

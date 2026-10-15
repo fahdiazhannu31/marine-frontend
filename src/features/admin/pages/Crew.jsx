@@ -1164,11 +1164,19 @@ export default function Crew() {
 
   const [tab, setTab] = useState("crew"); // crew | assign | checkin
   const [crewList, setCrewList] = useState([]);
+  const [crewMeta, setCrewMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 20,
+    total_pages: 0,
+  });
   const [schedules, setSchedules] = useState([]);
   const [boats, setBoats] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState(""); // for debounce
 
   // Modals
   const [editCrew, setEditCrew] = useState(null); // crew obj or {} for new
@@ -1192,14 +1200,25 @@ export default function Crew() {
   const DEBOUNCE_MS = 3000;
 
   // ── Load data ──────────────────────────────────────────────────────────────
-  const loadCrew = useCallback(async () => {
-    try {
-      const data = await fetchCrew(roleFilter || null);
-      setCrewList(Array.isArray(data) ? data : []);
-    } catch (e) {
-      toast.error("Gagal memuat data crew.");
-    }
-  }, [roleFilter]); // eslint-disable-line
+  const loadCrew = useCallback(
+    async (page = 1) => {
+      try {
+        const response = await fetchCrew(roleFilter || null, {
+          search: searchQuery,
+          page,
+          limit: 20,
+        });
+        // Backend now returns { data, meta }
+        setCrewList(Array.isArray(response.data) ? response.data : []);
+        setCrewMeta(
+          response.meta || { total: 0, page: 1, limit: 20, total_pages: 0 },
+        );
+      } catch (e) {
+        toast.error("Gagal memuat data crew.");
+      }
+    },
+    [roleFilter, searchQuery],
+  ); // eslint-disable-line
 
   const loadSchedules = useCallback(async () => {
     try {
@@ -1244,6 +1263,21 @@ export default function Crew() {
   useEffect(() => {
     loadCrew();
   }, [loadCrew]);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Reset to page 1 when filter/search changes
+  useEffect(() => {
+    if (crewMeta.page !== 1) {
+      loadCrew(1);
+    }
+  }, [searchQuery, roleFilter]); // eslint-disable-line
   useEffect(() => {
     if (tab === "assign") loadAssignments();
   }, [tab, loadAssignments]);
@@ -1423,6 +1457,24 @@ export default function Crew() {
       {/* ── TAB: Crew List ── */}
       {tab === "crew" && (
         <>
+          {/* Search box */}
+          <div style={{ marginBottom: 16 }}>
+            <input
+              type="text"
+              placeholder="Cari nama, HP, atau NIK..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{
+                width: "100%",
+                maxWidth: 400,
+                padding: "10px 14px",
+                border: "1px solid var(--adm-border-strong)",
+                borderRadius: "var(--adm-radius-sm)",
+                fontSize: 14,
+              }}
+            />
+          </div>
+
           {/* Role filter */}
           <div
             style={{
@@ -1465,7 +1517,9 @@ export default function Crew() {
                       className="adm-empty"
                       style={{ textAlign: "center", padding: 32 }}
                     >
-                      Belum ada crew.
+                      {searchQuery || roleFilter
+                        ? "Tidak ada hasil."
+                        : "Belum ada crew."}
                     </td>
                   </tr>
                 )}
@@ -1554,6 +1608,68 @@ export default function Crew() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {crewMeta.total_pages > 1 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: 16,
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              <span style={{ fontSize: 13, color: "var(--adm-text-muted)" }}>
+                Menampilkan {(crewMeta.page - 1) * crewMeta.limit + 1}–
+                {Math.min(crewMeta.page * crewMeta.limit, crewMeta.total)} dari{" "}
+                {crewMeta.total} crew
+              </span>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <button
+                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                  onClick={() => loadCrew(1)}
+                  disabled={crewMeta.page === 1}
+                >
+                  «
+                </button>
+                <button
+                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                  onClick={() => loadCrew(crewMeta.page - 1)}
+                  disabled={crewMeta.page === 1}
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                {/* Page number buttons */}
+                {Array.from({ length: crewMeta.total_pages }, (_, i) => i + 1)
+                  .filter((p) => Math.abs(p - crewMeta.page) <= 2)
+                  .map((p) => (
+                    <button
+                      key={p}
+                      className={`adm-btn adm-btn-sm ${p === crewMeta.page ? "adm-btn-primary" : "adm-btn-secondary"}`}
+                      onClick={() => loadCrew(p)}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                <button
+                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                  onClick={() => loadCrew(crewMeta.page + 1)}
+                  disabled={crewMeta.page === crewMeta.total_pages}
+                >
+                  <ChevronRight size={14} />
+                </button>
+                <button
+                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                  onClick={() => loadCrew(crewMeta.total_pages)}
+                  disabled={crewMeta.page === crewMeta.total_pages}
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
 
