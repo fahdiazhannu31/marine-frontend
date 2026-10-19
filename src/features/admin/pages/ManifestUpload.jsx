@@ -1069,7 +1069,10 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
     <div>
       <div className="adm-stat-grid" style={{ marginBottom: 20 }}>
         {[
-          { label: "Total Pax", value: tickets.length },
+          {
+            label: "Total Pax",
+            value: tickets.filter((t) => !isCancelled(t)).length,
+          },
           {
             label: "Seat Assigned",
             value: tickets.filter((t) => t.seat_number && !isCancelled(t))
