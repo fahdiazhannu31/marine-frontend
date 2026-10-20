@@ -361,13 +361,16 @@ function TicketEditModal({
                 <option
                   key={s.id}
                   value={s.id}
-                  disabled={s.status === "booked" && s.id !== ticket.seat_id}
+                  disabled={
+                    !s.available_on_date &&
+                    String(s.id) !== String(ticket.seat_id)
+                  }
                 >
                   {s.seat_number}
-                  {s.status === "booked" && s.id === ticket.seat_id
+                  {String(s.id) === String(ticket.seat_id)
                     ? " (current)"
-                    : s.status === "booked"
-                      ? " (booked)"
+                    : !s.available_on_date
+                      ? " (taken)"
                       : " (available)"}
                 </option>
               ))}
@@ -857,7 +860,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const openEditModal = async (ticket) => {
     setEditingTicket(ticket);
     try {
-      const data = await fetchAvailableSeats(upload.id);
+      const data = await fetchAvailableSeats(upload.id, ticket.id);
       console.log("Available seats data:", data); // Debug
       console.log("Seats array:", data.seats); // Debug
       setAvailableSeats(data.seats || []);

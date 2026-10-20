@@ -120,8 +120,9 @@ export async function toggleCancelTicket(ticketId) {
   );
 }
 
-export async function fetchAvailableSeats(uploadId) {
-  return api.get(`${BASE}/available-seats/${uploadId}`, { auth: true });
+export async function fetchAvailableSeats(uploadId, excludeTicketId = null) {
+  const qs = excludeTicketId ? `?exclude_ticket_id=${excludeTicketId}` : "";
+  return api.get(`${BASE}/available-seats/${uploadId}${qs}`, { auth: true });
 }
 
 // ── Manifest Final & Export ──────────────────────────────────────────────────
