@@ -839,6 +839,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
     passenger_name: "",
     group_name: "",
     ket: "DAY TRIP",
+    seat_id: "",
     email: "",
     notes: "",
     age: "",
@@ -847,6 +848,8 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
     id_passport: "",
   });
   const [addingPassenger, setAddingPassenger] = useState(false);
+  const [addPassengerSeats, setAddPassengerSeats] = useState([]);
+  const [loadingAddSeats, setLoadingAddSeats] = useState(false);
   const itemsPerPage = 20;
 
   // Debounce search input (300ms delay)
@@ -1005,6 +1008,9 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
     try {
       const payload = { ...addPassengerForm };
       if (!payload.group_name) payload.group_name = payload.passenger_name;
+      // send seat_id as int or omit if empty (backend will auto-assign)
+      if (payload.seat_id) payload.seat_id = parseInt(payload.seat_id);
+      else delete payload.seat_id;
       await api.post(`/api/admin/manifest/${upload.id}/tickets`, payload, {
         auth: true,
       });
@@ -1014,6 +1020,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         passenger_name: "",
         group_name: "",
         ket: "DAY TRIP",
+        seat_id: "",
         email: "",
         notes: "",
         age: "",
@@ -1021,6 +1028,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         domicile: "",
         id_passport: "",
       });
+      setAddPassengerSeats([]);
       // Refresh tickets
       onRefresh();
     } catch (err) {
@@ -1175,7 +1183,18 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             border: "none",
             marginRight: 8,
           }}
-          onClick={() => setShowAddPassenger(true)}
+          onClick={async () => {
+            setShowAddPassenger(true);
+            setLoadingAddSeats(true);
+            try {
+              const data = await fetchAvailableSeats(upload.id);
+              setAddPassengerSeats(data.seats || []);
+            } catch (_) {
+              setAddPassengerSeats([]);
+            } finally {
+              setLoadingAddSeats(false);
+            }
+          }}
         >
           + Add Passenger
         </button>
@@ -1820,6 +1839,42 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                     <option value="F">Perempuan</option>
                   </select>
                 </div>
+              </div>
+              <div className="adm-field">
+                <label>Kursi</label>
+                {loadingAddSeats ? (
+                  <p style={{ fontSize: 12, color: "var(--adm-text-muted)" }}>
+                    Memuat kursi…
+                  </p>
+                ) : (
+                  <select
+                    value={addPassengerForm.seat_id}
+                    onChange={(e) =>
+                      setAddPassengerForm({
+                        ...addPassengerForm,
+                        seat_id: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">
+                      — Auto assign (kursi tersedia pertama) —
+                    </option>
+                    {addPassengerSeats
+                      .filter((s) => s.available_on_date)
+                      .map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.seat_number}
+                        </option>
+                      ))}
+                  </select>
+                )}
+                {!loadingAddSeats &&
+                  addPassengerSeats.filter((s) => s.available_on_date)
+                    .length === 0 && (
+                    <p style={{ fontSize: 12, color: "#d32f2f", marginTop: 4 }}>
+                      ⚠️ Tidak ada kursi tersedia untuk tanggal ini.
+                    </p>
+                  )}
               </div>
               <div className="adm-form-row">
                 <div className="adm-field">
