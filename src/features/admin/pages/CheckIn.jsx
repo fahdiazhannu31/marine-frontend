@@ -621,6 +621,12 @@ export default function CheckIn() {
         } else {
           toast.error(errData.error || e.message || "QR tidak dikenali.");
         }
+      } else if (e.status === 404) {
+        // Ticket not found — QR is invalid, expired, or from wrong manifest
+        playBeep("error");
+        toast.error(
+          "❌ Tiket tidak ditemukan. QR mungkin dari manifest lain atau sudah tidak aktif.",
+        );
       } else {
         toast.error(e.message || "QR tidak dikenali.");
       }
