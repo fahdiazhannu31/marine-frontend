@@ -73,9 +73,9 @@ export function AuthProvider({ children }) {
           setStatus("ready");
         } catch (fetchMeError) {
           console.warn(
-            "[AuthProvider] fetchMe failed, creating minimal user object from token",
+            "[AuthProvider] fetchMe failed, keeping token alive with minimal user",
           );
-          // Fallback: create minimal user object
+          // Fallback: keep token alive — don't force logout on network error
           const minimalUser = { authenticated: true };
           setUser(minimalUser);
           setStoredUser(minimalUser);
@@ -83,9 +83,22 @@ export function AuthProvider({ children }) {
         }
       } catch (error) {
         console.error("[AuthProvider] Auth init failed:", error.message);
-        persistToken(null);
-        setStoredUser(null);
-        setUser(null);
+        // Only clear token if it's truly an auth error (401/403), not network issues
+        // This prevents logout on temporary network hiccups
+        if (error.status === 401 || error.status === 403) {
+          persistToken(null);
+          setStoredUser(null);
+          setUser(null);
+        } else {
+          // Network error — keep stored user to avoid forced logout
+          console.warn(
+            "[AuthProvider] Network error during init, keeping stored session",
+          );
+          const storedUserFallback = getStoredUser();
+          if (storedUserFallback) {
+            setUser(storedUserFallback);
+          }
+        }
         setStatus("ready");
       }
     };
