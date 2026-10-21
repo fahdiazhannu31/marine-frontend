@@ -624,9 +624,27 @@ export default function CheckIn() {
       } else if (e.status === 404) {
         // Ticket not found — QR is invalid, expired, or from wrong manifest
         playBeep("error");
-        toast.error(
-          "❌ Tiket tidak ditemukan. QR mungkin dari manifest lain atau sudah tidak aktif.",
-        );
+
+        // Show debug info if available
+        const debugInfo = e.data?.debug_info;
+        let errorMsg = "❌ Tiket tidak ditemukan";
+
+        if (debugInfo?.suggestion) {
+          errorMsg += `. ${debugInfo.suggestion}`;
+        } else {
+          errorMsg += ". QR mungkin dari manifest lain atau sudah tidak aktif.";
+        }
+
+        // Log to console for debugging
+        if (debugInfo) {
+          console.warn("[CheckIn] Ticket not found - Debug Info:", {
+            scanned_code: e.data?.scanned_code,
+            clean_code: debugInfo.clean_code,
+            tried_formats: debugInfo.tried_formats,
+          });
+        }
+
+        toast.error(errorMsg, { duration: 8000 });
       } else {
         toast.error(e.message || "QR tidak dikenali.");
       }

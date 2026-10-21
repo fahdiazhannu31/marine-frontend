@@ -66,10 +66,27 @@ export async function uploadManifestFile({
     body: formData,
   });
 
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
+  // Log response for debugging
+  console.log(
+    "[uploadManifestFile] Response status:",
+    res.status,
+    res.statusText,
+  );
+
+  // Parse response body
+  const data = await res.json().catch((err) => {
+    console.error("[uploadManifestFile] Failed to parse JSON:", err);
+    return null;
+  });
+
+  // HTTP 201 Created is success, but check explicitly
+  if (!res.ok && res.status !== 201) {
+    console.error("[uploadManifestFile] Upload failed:", data);
     throw new Error(data?.error || `Upload failed (HTTP ${res.status})`);
   }
+
+  // Success! Log data
+  console.log("[uploadManifestFile] Upload successful:", data);
   return data;
 }
 

@@ -2950,8 +2950,24 @@ export default function ManifestUpload() {
   const handleUploadSuccess = async (uploadId) => {
     const ups = await fetchUploads().catch(() => uploads);
     setUploads(ups);
-    loadDetail(uploadId);
-    setTab("Tickets");
+
+    // Add a small delay to ensure DB commit is complete before fetching detail
+    setTimeout(async () => {
+      try {
+        await loadDetail(uploadId);
+        setTab("Tickets");
+      } catch (e) {
+        // Suppress error toast here since upload was successful
+        // User already saw success toast from UploadForm
+        console.warn(
+          "[handleUploadSuccess] Failed to load detail immediately after upload:",
+          e,
+        );
+        console.info(
+          "[handleUploadSuccess] User can manually select the upload from the list",
+        );
+      }
+    }, 500); // 500ms delay
   };
 
   const handleDelete = async (id) => {
