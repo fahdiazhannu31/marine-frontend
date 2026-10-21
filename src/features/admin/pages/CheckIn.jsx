@@ -537,6 +537,12 @@ export default function CheckIn() {
 
       if (autoCheckin && sid) {
         const ticket = data.tickets.find((t) => Number(t.id) === sid);
+        // fallback name directly from backend (avoids id type mismatch)
+        const passengerName =
+          ticket?.passenger_name || data.scanned_passenger_name || "Penumpang";
+        const seatNumber =
+          ticket?.seat_number || data.scanned_seat_number || null;
+
         if (
           ticket &&
           parseInt(ticket.checked_in) !== 1 &&
@@ -554,24 +560,37 @@ export default function CheckIn() {
             {
               id: Date.now(),
               type: "passenger",
-              name: ticket.passenger_name,
+              name: passengerName,
               group: data.group_name,
               boat: data.boat_name,
-              seat: ticket.seat_number,
+              seat: seatNumber,
               ts: new Date(),
             },
             ...prev.slice(0, 29),
           ]);
-          toast.success(`✓ ${ticket.passenger_name} checked in`);
+          toast.success(`✓ ${passengerName} checked in`);
         } else if (ticket && parseInt(ticket.checked_in) === 1) {
-          toast.info(`${ticket.passenger_name} sudah check-in sebelumnya`);
+          toast.info(`${passengerName} sudah check-in sebelumnya`);
         } else if (!ticket && sid) {
+          // ticket not found in group array but sid exists — still check in
           await api.post(
             "/api/admin/manifest/checkin-bulk",
             { ticket_ids: [sid] },
             { auth: true },
           );
-          toast.success("✓ Penumpang checked in");
+          setScanLog((prev) => [
+            {
+              id: Date.now(),
+              type: "passenger",
+              name: passengerName,
+              group: data.group_name,
+              boat: data.boat_name,
+              seat: seatNumber,
+              ts: new Date(),
+            },
+            ...prev.slice(0, 29),
+          ]);
+          toast.success(`✓ ${passengerName} checked in`);
         }
       }
 
