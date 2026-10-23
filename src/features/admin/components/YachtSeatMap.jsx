@@ -138,9 +138,7 @@ const BOAT_LAYOUTS = {
   // ── MOLA-MOLA / MARINA SRIKANDI (id 14) ──────────────────────────────────
   // BAWAH deck: rows 1-14
   // - Row 1: ABC (left) | gap (center) | DEF (right) - 6 seats total
-  // - Rows 2-8: ABCDE (left) | FGHIJ (right) - 10 seats per row  (regular)
-  // - Row 9:  ABCDE (left) | FGHIJ (right) - EMERGENCY / special guest row
-  // - Rows 10-13: ABCDE (left) | FGHIJ (right) - 10 seats per row (regular)
+  // - Rows 2-13: ABCDE (left) | FGHIJ (right) - 10 seats per row
   // - Row 14: ABC (left) | gap | DEF (right) - 6 seats
   // ATAS deck: rows 15-22
   // - All rows: ABC (left) | DEF (right) - 6 seats per row
@@ -150,12 +148,11 @@ const BOAT_LAYOUTS = {
     captainArea: true,
     twoDecks: true, // custom flag used by renderer
     deckSplit: 15, // row >= 15 is ATAS deck
-    emergencyRow: 9, // row 9 is hidden until isOverCapacity=true
     rows: [
       // BAWAH DECK
       // Row 1: ABC | _ _ | DEF (ada gap di tengah seperti gambar)
       { row: 1, left: ["A", "B", "C"], right: [null, "D", "E", "F"] },
-      // Rows 2-8: regular seats
+      // Rows 2-13: ABCDE | FGHIJ (full 10 seats)
       {
         row: 2,
         left: ["A", "B", "C", "D", "E"],
@@ -191,14 +188,11 @@ const BOAT_LAYOUTS = {
         left: ["A", "B", "C", "D", "E"],
         right: ["F", "G", "H", "I", "J"],
       },
-      // Row 9: EMERGENCY / special guest — only shown when isOverCapacity=true
       {
         row: 9,
         left: ["A", "B", "C", "D", "E"],
         right: ["F", "G", "H", "I", "J"],
-        emergency: true,
       },
-      // Rows 10-13: regular seats
       {
         row: 10,
         left: ["A", "B", "C", "D", "E"],
@@ -352,7 +346,6 @@ export default function YachtSeatMap({
   boatId = null,
   boatName = null,
   highlightMode = false,
-  isOverCapacity = false, // when true, emergency row 9 becomes visible on MOLA-MOLA
 }) {
   const canSelectMore = !maxSeats || selectedSeats.length < maxSeats;
 
@@ -588,11 +581,6 @@ export default function YachtSeatMap({
       ? layout.rows.filter((r) => r.row >= layout.deckSplit)
       : [];
 
-    // Split bawah rows into regular and emergency (row.emergency === true)
-    // Emergency rows are only shown when isOverCapacity=true
-    const regularBawahRows = bawahRows.filter((r) => !r.emergency);
-    const emergencyRows = bawahRows.filter((r) => r.emergency);
-
     const bowClass = getBowClass(boatId, layout.name);
 
     return (
@@ -646,65 +634,39 @@ export default function YachtSeatMap({
         )}
 
         {/* BAWAH seat rows — row numbers OUTSIDE on RIGHT */}
-        {/* Emergency row 9 is rendered inline at its correct position */}
         <div className="fp-rows">
-          {bawahRows.map(
-            ({ row, left, right, outerLeft, outerRight, emergency }) => {
-              // Emergency row: only show when isOverCapacity, skip entirely otherwise
-              if (emergency && !isOverCapacity) return null;
-
-              return (
-                <div key={row} className="fp-row-with-number">
-                  <div
-                    className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
-                    style={
-                      emergency
-                        ? {
-                            outline: "2px dashed #ef5350",
-                            borderRadius: 8,
-                            background: "rgba(255,82,82,0.06)",
-                            marginTop: 2,
-                          }
-                        : undefined
-                    }
-                  >
-                    {layout.hasOuterSeats && (
-                      <div className="fp-outer fp-outer-left">
-                        {outerLeft ? (
-                          renderSeat(outerLeft)
-                        ) : (
-                          <div className="fp-outer-empty" />
-                        )}
-                      </div>
-                    )}
-                    {renderLeftSide(row, left)}
-                    <div className="fp-aisle" />
-                    {renderRightSide(row, right)}
-                    {layout.hasOuterSeats && (
-                      <div className="fp-outer fp-outer-right">
-                        {outerRight ? (
-                          renderSeat(outerRight)
-                        ) : (
-                          <div className="fp-outer-empty" />
-                        )}
-                      </div>
+          {bawahRows.map(({ row, left, right, outerLeft, outerRight }) => (
+            <div key={row} className="fp-row-with-number">
+              <div
+                className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
+              >
+                {/* Outer left seat (e.g. L1, L2...) */}
+                {layout.hasOuterSeats && (
+                  <div className="fp-outer fp-outer-left">
+                    {outerLeft ? (
+                      renderSeat(outerLeft)
+                    ) : (
+                      <div className="fp-outer-empty" />
                     )}
                   </div>
-                  <div
-                    className="fp-row-num-outside"
-                    style={
-                      emergency
-                        ? { color: "#c62828", fontWeight: 700 }
-                        : undefined
-                    }
-                  >
-                    {row}
-                    {emergency ? "🚨" : ""}
+                )}
+                {renderLeftSide(row, left)}
+                <div className="fp-aisle" />
+                {renderRightSide(row, right)}
+                {/* Outer right seat (e.g. R1, R2...) */}
+                {layout.hasOuterSeats && (
+                  <div className="fp-outer fp-outer-right">
+                    {outerRight ? (
+                      renderSeat(outerRight)
+                    ) : (
+                      <div className="fp-outer-empty" />
+                    )}
                   </div>
-                </div>
-              );
-            },
-          )}
+                )}
+              </div>
+              <div className="fp-row-num-outside">{row}</div>
+            </div>
+          ))}
         </div>
 
         {/* ATAS Deck separator and rows */}
