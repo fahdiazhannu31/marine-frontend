@@ -859,6 +859,14 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const [loadingAddSeats, setLoadingAddSeats] = useState(false);
   const itemsPerPage = 20;
 
+  // Auto-load available seats when upload changes so isOverCapacity is always accurate
+  useEffect(() => {
+    if (!upload?.id) return;
+    fetchAvailableSeats(upload.id)
+      .then((data) => setAddPassengerSeats(data.seats || []))
+      .catch(() => setAddPassengerSeats([]));
+  }, [upload?.id]);
+
   // Debounce search input (300ms delay)
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -884,29 +892,18 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const isCancelled = (t) => parseInt(t.cancelled) === 1;
   const cancelledCount = tickets.filter(isCancelled).length;
 
-  // ── isOverCapacity: true when all regular seats on this boat/date are full ──
-  // Regular seats = all seats excluding emergency row 9 (9A-9J) for MOLA-MOLA.
-  // We detect MOLA-MOLA by boat_name containing "mola".
+  // ── isOverCapacity: true when all regular MOLA-MOLA seats are taken ──
+  // Regular = all non-row-9 seats. Row 9 (9A-9J) = emergency/special guest.
+  // addPassengerSeats is auto-loaded via useEffect above so this is always live.
   const isMolaMola = (upload?.boat_name || "").toLowerCase().includes("mola");
-  const assignedRegularSeats = tickets.filter((t) => {
-    if (isCancelled(t) || !t.seat_number) return false;
-    if (isMolaMola) {
-      // Exclude row 9 (seats 9A-9J) from regular count
-      return !/^9[A-Ja-j]$/.test(t.seat_number);
-    }
-    return true;
-  }).length;
-  // boat capacity from upload or fallback to counting non-emergency seats
-  const boatCapacity = upload?.boat_capacity || upload?.capacity || null;
-  // isOverCapacity: if we have a capacity number, use it; otherwise check
-  // if available regular seats in the addPassengerSeats list is 0
+
+  const regularAvailable = addPassengerSeats.filter(
+    (s) => s.available_on_date && !/^9[A-Ja-j]$/i.test(s.seat_number),
+  ).length;
+
+  // Only active for MOLA-MOLA once seats data has loaded
   const isOverCapacity =
-    isMolaMola &&
-    (boatCapacity
-      ? assignedRegularSeats >= boatCapacity
-      : addPassengerSeats.filter(
-          (s) => s.available_on_date && !/^9[A-Ja-j]$/.test(s.seat_number),
-        ).length === 0 && addPassengerSeats.length > 0);
+    isMolaMola && addPassengerSeats.length > 0 && regularAvailable === 0;
 
   const filtered = tickets.filter((t) => {
     const q = search.toLowerCase();
