@@ -647,38 +647,40 @@ export default function YachtSeatMap({
 
         {/* BAWAH seat rows — row numbers OUTSIDE on RIGHT */}
         <div className="fp-rows">
-          {regularBawahRows.map(({ row, left, right, outerLeft, outerRight }) => (
-            <div key={row} className="fp-row-with-number">
-              <div
-                className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
-              >
-                {/* Outer left seat (e.g. L1, L2...) */}
-                {layout.hasOuterSeats && (
-                  <div className="fp-outer fp-outer-left">
-                    {outerLeft ? (
-                      renderSeat(outerLeft)
-                    ) : (
-                      <div className="fp-outer-empty" />
-                    )}
-                  </div>
-                )}
-                {renderLeftSide(row, left)}
-                <div className="fp-aisle" />
-                {renderRightSide(row, right)}
-                {/* Outer right seat (e.g. R1, R2...) */}
-                {layout.hasOuterSeats && (
-                  <div className="fp-outer fp-outer-right">
-                    {outerRight ? (
-                      renderSeat(outerRight)
-                    ) : (
-                      <div className="fp-outer-empty" />
-                    )}
-                  </div>
-                )}
+          {regularBawahRows.map(
+            ({ row, left, right, outerLeft, outerRight }) => (
+              <div key={row} className="fp-row-with-number">
+                <div
+                  className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
+                >
+                  {/* Outer left seat (e.g. L1, L2...) */}
+                  {layout.hasOuterSeats && (
+                    <div className="fp-outer fp-outer-left">
+                      {outerLeft ? (
+                        renderSeat(outerLeft)
+                      ) : (
+                        <div className="fp-outer-empty" />
+                      )}
+                    </div>
+                  )}
+                  {renderLeftSide(row, left)}
+                  <div className="fp-aisle" />
+                  {renderRightSide(row, right)}
+                  {/* Outer right seat (e.g. R1, R2...) */}
+                  {layout.hasOuterSeats && (
+                    <div className="fp-outer fp-outer-right">
+                      {outerRight ? (
+                        renderSeat(outerRight)
+                      ) : (
+                        <div className="fp-outer-empty" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="fp-row-num-outside">{row}</div>
               </div>
-              <div className="fp-row-num-outside">{row}</div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
 
         {/* Emergency / Special Guest rows — only shown when isOverCapacity */}
@@ -710,9 +712,15 @@ export default function YachtSeatMap({
               }}
             >
               {isOverCapacity ? (
-                <>🚨 Emergency / Special Guest Row — Row {emergencyRows.map((r) => r.row).join(", ")}</>
+                <>
+                  🚨 Emergency / Special Guest Row — Row{" "}
+                  {emergencyRows.map((r) => r.row).join(", ")}
+                </>
               ) : (
-                <>🔒 Emergency Row {emergencyRows.map((r) => r.row).join(", ")} (terkunci — aktif jika kapasitas penuh)</>
+                <>
+                  🔒 Emergency Row {emergencyRows.map((r) => r.row).join(", ")}{" "}
+                  (terkunci — aktif jika kapasitas penuh)
+                </>
               )}
             </div>
             {isOverCapacity && (
@@ -742,7 +750,7 @@ export default function YachtSeatMap({
               </div>
             )}
           </>
-        )
+        )}
 
         {/* ATAS Deck separator and rows */}
         {atasRows.length > 0 && (
