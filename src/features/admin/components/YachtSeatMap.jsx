@@ -517,11 +517,12 @@ export default function YachtSeatMap({
         slots = Array(maxLeft).fill(null);
         const seats = left.filter((c) => typeof c === "string");
         const specials = left.filter((c) => c && typeof c !== "string");
+        // Place A at slot 0 (leftmost / window side), B at slot 1, etc.
         seats.forEach((col, i) => {
-          slots[maxLeft - 1 - i] = { type: "seat", col };
+          slots[i] = { type: "seat", col };
         });
         specials.forEach((cell) => {
-          const emptyIdx = slots.findIndex((s) => s === null);
+          const emptyIdx = slots.findLastIndex((s) => s === null);
           if (emptyIdx !== -1) slots[emptyIdx] = { type: "special", cell };
         });
       }
