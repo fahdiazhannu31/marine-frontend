@@ -138,7 +138,9 @@ const BOAT_LAYOUTS = {
   // ── MOLA-MOLA / MARINA SRIKANDI (id 14) ──────────────────────────────────
   // BAWAH deck: rows 1-14
   // - Row 1: ABC (left) | gap (center) | DEF (right) - 6 seats total
-  // - Rows 2-13: ABCDE (left) | FGHIJ (right) - 10 seats per row
+  // - Rows 2-8: ABCDE (left) | FGHIJ (right) - 10 seats per row  (regular)
+  // - Row 9:  ABCDE (left) | FGHIJ (right) - EMERGENCY / special guest row
+  // - Rows 10-13: ABCDE (left) | FGHIJ (right) - 10 seats per row (regular)
   // - Row 14: ABC (left) | gap | DEF (right) - 6 seats
   // ATAS deck: rows 15-22
   // - All rows: ABC (left) | DEF (right) - 6 seats per row
@@ -148,11 +150,12 @@ const BOAT_LAYOUTS = {
     captainArea: true,
     twoDecks: true, // custom flag used by renderer
     deckSplit: 15, // row >= 15 is ATAS deck
+    emergencyRow: 9, // row 9 is hidden until isOverCapacity=true
     rows: [
       // BAWAH DECK
       // Row 1: ABC | _ _ | DEF (ada gap di tengah seperti gambar)
       { row: 1, left: ["A", "B", "C"], right: [null, "D", "E", "F"] },
-      // Rows 2-13: ABCDE | FGHIJ (full 10 seats)
+      // Rows 2-8: regular seats
       {
         row: 2,
         left: ["A", "B", "C", "D", "E"],
@@ -188,11 +191,14 @@ const BOAT_LAYOUTS = {
         left: ["A", "B", "C", "D", "E"],
         right: ["F", "G", "H", "I", "J"],
       },
+      // Row 9: EMERGENCY / special guest — only shown when isOverCapacity=true
       {
         row: 9,
         left: ["A", "B", "C", "D", "E"],
         right: ["F", "G", "H", "I", "J"],
+        emergency: true,
       },
+      // Rows 10-13: regular seats
       {
         row: 10,
         left: ["A", "B", "C", "D", "E"],
@@ -346,6 +352,7 @@ export default function YachtSeatMap({
   boatId = null,
   boatName = null,
   highlightMode = false,
+  isOverCapacity = false, // when true, emergency row 9 becomes visible on MOLA-MOLA
 }) {
   const canSelectMore = !maxSeats || selectedSeats.length < maxSeats;
 
@@ -581,6 +588,11 @@ export default function YachtSeatMap({
       ? layout.rows.filter((r) => r.row >= layout.deckSplit)
       : [];
 
+    // Split bawah rows into regular and emergency (row.emergency === true)
+    // Emergency rows are only shown when isOverCapacity=true
+    const regularBawahRows = bawahRows.filter((r) => !r.emergency);
+    const emergencyRows = bawahRows.filter((r) => r.emergency);
+
     const bowClass = getBowClass(boatId, layout.name);
 
     return (
@@ -635,7 +647,7 @@ export default function YachtSeatMap({
 
         {/* BAWAH seat rows — row numbers OUTSIDE on RIGHT */}
         <div className="fp-rows">
-          {bawahRows.map(({ row, left, right, outerLeft, outerRight }) => (
+          {regularBawahRows.map(({ row, left, right, outerLeft, outerRight }) => (
             <div key={row} className="fp-row-with-number">
               <div
                 className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
@@ -668,6 +680,69 @@ export default function YachtSeatMap({
             </div>
           ))}
         </div>
+
+        {/* Emergency / Special Guest rows — only shown when isOverCapacity */}
+        {emergencyRows.length > 0 && (
+          <>
+            <div
+              style={{
+                width: "100%",
+                textAlign: "center",
+                padding: "10px 0 8px",
+                fontSize: "13px",
+                fontWeight: 700,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                borderRadius: "6px 6px 0 0",
+                marginTop: "8px",
+                cursor: isOverCapacity ? "default" : "pointer",
+                ...(isOverCapacity
+                  ? {
+                      color: "#b71c1c",
+                      background: "rgba(255, 82, 82, 0.12)",
+                      borderTop: "2px dashed #ef5350",
+                    }
+                  : {
+                      color: "rgba(0,0,0,0.3)",
+                      background: "rgba(0,0,0,0.04)",
+                      borderTop: "2px dashed #ccc",
+                    }),
+              }}
+            >
+              {isOverCapacity ? (
+                <>🚨 Emergency / Special Guest Row — Row {emergencyRows.map((r) => r.row).join(", ")}</>
+              ) : (
+                <>🔒 Emergency Row {emergencyRows.map((r) => r.row).join(", ")} (terkunci — aktif jika kapasitas penuh)</>
+              )}
+            </div>
+            {isOverCapacity && (
+              <div className="fp-rows">
+                {emergencyRows.map(({ row, left, right }) => (
+                  <div key={row} className="fp-row-with-number">
+                    <div
+                      className="fp-row"
+                      style={{
+                        outline: "2px dashed #ef5350",
+                        borderRadius: 8,
+                        background: "rgba(255,82,82,0.06)",
+                      }}
+                    >
+                      {renderLeftSide(row, left)}
+                      <div className="fp-aisle" />
+                      {renderRightSide(row, right)}
+                    </div>
+                    <div
+                      className="fp-row-num-outside"
+                      style={{ color: "#c62828", fontWeight: 700 }}
+                    >
+                      {row}🚨
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )
 
         {/* ATAS Deck separator and rows */}
         {atasRows.length > 0 && (

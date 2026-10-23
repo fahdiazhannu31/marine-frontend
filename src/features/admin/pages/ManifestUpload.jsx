@@ -82,7 +82,13 @@ const TABS = ["Upload", "Tickets", "Baggage"];
 
 // ── SeatMap with Group Highlight ─────────────────────────────────────────────
 // Using YachtSeatMap component for proper boat layouts including MOLA-MOLA
-function SeatMap({ tickets, upload, highlightedGroup, onClearHighlight }) {
+function SeatMap({
+  tickets,
+  upload,
+  highlightedGroup,
+  onClearHighlight,
+  isOverCapacity = false,
+}) {
   if (!tickets || tickets.length === 0) return null;
 
   // Build seats array with booking status from tickets
@@ -249,6 +255,7 @@ function SeatMap({ tickets, upload, highlightedGroup, onClearHighlight }) {
         boatId={upload?.boat_id || null}
         boatName={upload?.boat_name || null}
         highlightMode={!!highlightedGroup}
+        isOverCapacity={isOverCapacity}
       />
     </div>
   );
@@ -877,6 +884,30 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
   const isCancelled = (t) => parseInt(t.cancelled) === 1;
   const cancelledCount = tickets.filter(isCancelled).length;
 
+  // ── isOverCapacity: true when all regular seats on this boat/date are full ──
+  // Regular seats = all seats excluding emergency row 9 (9A-9J) for MOLA-MOLA.
+  // We detect MOLA-MOLA by boat_name containing "mola".
+  const isMolaMola = (upload?.boat_name || "").toLowerCase().includes("mola");
+  const assignedRegularSeats = tickets.filter((t) => {
+    if (isCancelled(t) || !t.seat_number) return false;
+    if (isMolaMola) {
+      // Exclude row 9 (seats 9A-9J) from regular count
+      return !/^9[A-Ja-j]$/.test(t.seat_number);
+    }
+    return true;
+  }).length;
+  // boat capacity from upload or fallback to counting non-emergency seats
+  const boatCapacity = upload?.boat_capacity || upload?.capacity || null;
+  // isOverCapacity: if we have a capacity number, use it; otherwise check
+  // if available regular seats in the addPassengerSeats list is 0
+  const isOverCapacity =
+    isMolaMola &&
+    (boatCapacity
+      ? assignedRegularSeats >= boatCapacity
+      : addPassengerSeats.filter(
+          (s) => s.available_on_date && !/^9[A-Ja-j]$/.test(s.seat_number),
+        ).length === 0 && addPassengerSeats.length > 0);
+
   const filtered = tickets.filter((t) => {
     const q = search.toLowerCase();
     const matchSearch =
@@ -1150,6 +1181,7 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         upload={upload}
         highlightedGroup={highlightedGroup}
         onClearHighlight={() => setHighlightedGroup(null)}
+        isOverCapacity={isOverCapacity}
       />
 
       {/* Crew check-in status for this schedule */}
@@ -1859,22 +1891,69 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                     <option value="">
                       — Auto assign (kursi tersedia pertama) —
                     </option>
+                    {/* Regular seats */}
                     {addPassengerSeats
-                      .filter((s) => s.available_on_date)
+                      .filter(
+                        (s) =>
+                          s.available_on_date &&
+                          !/^9[A-Ja-j]$/.test(s.seat_number),
+                      )
                       .map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.seat_number}
                         </option>
                       ))}
+                    {/* Emergency row 9 seats — only for MOLA-MOLA when regular seats full */}
+                    {isMolaMola &&
+                      isOverCapacity &&
+                      addPassengerSeats
+                        .filter(
+                          (s) =>
+                            s.available_on_date &&
+                            /^9[A-Ja-j]$/.test(s.seat_number),
+                        )
+                        .map((s) => (
+                          <option key={s.id} value={s.id}>
+                            🚨 {s.seat_number} (Emergency)
+                          </option>
+                        ))}
                   </select>
                 )}
                 {!loadingAddSeats &&
-                  addPassengerSeats.filter((s) => s.available_on_date)
-                    .length === 0 && (
+                  addPassengerSeats.filter(
+                    (s) =>
+                      s.available_on_date && !/^9[A-Ja-j]$/.test(s.seat_number),
+                  ).length === 0 &&
+                  !isOverCapacity && (
                     <p style={{ fontSize: 12, color: "#d32f2f", marginTop: 4 }}>
                       ⚠️ Tidak ada kursi tersedia untuk tanggal ini.
                     </p>
                   )}
+                {isMolaMola &&
+                  !isOverCapacity &&
+                  addPassengerSeats.filter(
+                    (s) =>
+                      s.available_on_date && !/^9[A-Ja-j]$/.test(s.seat_number),
+                  ).length === 0 &&
+                  addPassengerSeats.length > 0 && (
+                    <p style={{ fontSize: 12, color: "#d32f2f", marginTop: 4 }}>
+                      ⚠️ Semua kursi reguler penuh. Kursi darurat baris 9 akan
+                      tersedia setelah semua kursi reguler terisi.
+                    </p>
+                  )}
+                {isMolaMola && isOverCapacity && (
+                  <p
+                    style={{
+                      fontSize: 12,
+                      color: "#c62828",
+                      marginTop: 4,
+                      fontWeight: 600,
+                    }}
+                  >
+                    🚨 Kapasitas penuh — kursi darurat baris 9 aktif untuk tamu
+                    special.
+                  </p>
+                )}
               </div>
               <div className="adm-form-row">
                 <div className="adm-field">
