@@ -1056,9 +1056,11 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
         domicile: "",
         id_passport: "",
       });
-      setAddPassengerSeats([]);
-      // Refresh tickets
+      // Refresh tickets AND re-load available seats so isOverCapacity stays correct
       onRefresh();
+      fetchAvailableSeats(upload.id)
+        .then((data) => setAddPassengerSeats(data.seats || []))
+        .catch(() => setAddPassengerSeats([]));
     } catch (err) {
       toast.error(err.message || "Gagal menambah penumpang");
     } finally {
