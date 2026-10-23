@@ -646,111 +646,66 @@ export default function YachtSeatMap({
         )}
 
         {/* BAWAH seat rows — row numbers OUTSIDE on RIGHT */}
+        {/* Emergency row 9 is rendered inline at its correct position */}
         <div className="fp-rows">
-          {regularBawahRows.map(
-            ({ row, left, right, outerLeft, outerRight }) => (
-              <div key={row} className="fp-row-with-number">
-                <div
-                  className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
-                >
-                  {/* Outer left seat (e.g. L1, L2...) */}
-                  {layout.hasOuterSeats && (
-                    <div className="fp-outer fp-outer-left">
-                      {outerLeft ? (
-                        renderSeat(outerLeft)
-                      ) : (
-                        <div className="fp-outer-empty" />
-                      )}
-                    </div>
-                  )}
-                  {renderLeftSide(row, left)}
-                  <div className="fp-aisle" />
-                  {renderRightSide(row, right)}
-                  {/* Outer right seat (e.g. R1, R2...) */}
-                  {layout.hasOuterSeats && (
-                    <div className="fp-outer fp-outer-right">
-                      {outerRight ? (
-                        renderSeat(outerRight)
-                      ) : (
-                        <div className="fp-outer-empty" />
-                      )}
-                    </div>
-                  )}
+          {bawahRows.map(
+            ({ row, left, right, outerLeft, outerRight, emergency }) => {
+              // Emergency row: only show when isOverCapacity, skip entirely otherwise
+              if (emergency && !isOverCapacity) return null;
+
+              return (
+                <div key={row} className="fp-row-with-number">
+                  <div
+                    className={`fp-row${layout.hasOuterSeats ? " has-outer" : ""}`}
+                    style={
+                      emergency
+                        ? {
+                            outline: "2px dashed #ef5350",
+                            borderRadius: 8,
+                            background: "rgba(255,82,82,0.06)",
+                            marginTop: 2,
+                          }
+                        : undefined
+                    }
+                  >
+                    {layout.hasOuterSeats && (
+                      <div className="fp-outer fp-outer-left">
+                        {outerLeft ? (
+                          renderSeat(outerLeft)
+                        ) : (
+                          <div className="fp-outer-empty" />
+                        )}
+                      </div>
+                    )}
+                    {renderLeftSide(row, left)}
+                    <div className="fp-aisle" />
+                    {renderRightSide(row, right)}
+                    {layout.hasOuterSeats && (
+                      <div className="fp-outer fp-outer-right">
+                        {outerRight ? (
+                          renderSeat(outerRight)
+                        ) : (
+                          <div className="fp-outer-empty" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className="fp-row-num-outside"
+                    style={
+                      emergency
+                        ? { color: "#c62828", fontWeight: 700 }
+                        : undefined
+                    }
+                  >
+                    {row}
+                    {emergency ? "🚨" : ""}
+                  </div>
                 </div>
-                <div className="fp-row-num-outside">{row}</div>
-              </div>
-            ),
+              );
+            },
           )}
         </div>
-
-        {/* Emergency / Special Guest rows — only shown when isOverCapacity */}
-        {emergencyRows.length > 0 && (
-          <>
-            <div
-              style={{
-                width: "100%",
-                textAlign: "center",
-                padding: "10px 0 8px",
-                fontSize: "13px",
-                fontWeight: 700,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                borderRadius: "6px 6px 0 0",
-                marginTop: "8px",
-                cursor: isOverCapacity ? "default" : "pointer",
-                ...(isOverCapacity
-                  ? {
-                      color: "#b71c1c",
-                      background: "rgba(255, 82, 82, 0.12)",
-                      borderTop: "2px dashed #ef5350",
-                    }
-                  : {
-                      color: "rgba(0,0,0,0.3)",
-                      background: "rgba(0,0,0,0.04)",
-                      borderTop: "2px dashed #ccc",
-                    }),
-              }}
-            >
-              {isOverCapacity ? (
-                <>
-                  🚨 Emergency / Special Guest Row — Row{" "}
-                  {emergencyRows.map((r) => r.row).join(", ")}
-                </>
-              ) : (
-                <>
-                  🔒 Emergency Row {emergencyRows.map((r) => r.row).join(", ")}{" "}
-                  (terkunci — aktif jika kapasitas penuh)
-                </>
-              )}
-            </div>
-            {isOverCapacity && (
-              <div className="fp-rows">
-                {emergencyRows.map(({ row, left, right }) => (
-                  <div key={row} className="fp-row-with-number">
-                    <div
-                      className="fp-row"
-                      style={{
-                        outline: "2px dashed #ef5350",
-                        borderRadius: 8,
-                        background: "rgba(255,82,82,0.06)",
-                      }}
-                    >
-                      {renderLeftSide(row, left)}
-                      <div className="fp-aisle" />
-                      {renderRightSide(row, right)}
-                    </div>
-                    <div
-                      className="fp-row-num-outside"
-                      style={{ color: "#c62828", fontWeight: 700 }}
-                    >
-                      {row}🚨
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
 
         {/* ATAS Deck separator and rows */}
         {atasRows.length > 0 && (
