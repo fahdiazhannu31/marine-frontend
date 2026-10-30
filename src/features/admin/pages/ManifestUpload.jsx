@@ -1182,6 +1182,8 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
             color: "#fff",
             border: "none",
             marginRight: 8,
+            opacity: upload.status === "confirmed" ? 0.5 : 1,
+            cursor: upload.status === "confirmed" ? "not-allowed" : "pointer",
           }}
           onClick={async () => {
             setShowAddPassenger(true);
@@ -1195,6 +1197,12 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
               setLoadingAddSeats(false);
             }
           }}
+          disabled={upload.status === "confirmed"}
+          title={
+            upload.status === "confirmed"
+              ? "Cannot add passenger to confirmed manifest"
+              : "Add passenger manually"
+          }
         >
           + Add Passenger
         </button>
@@ -1619,7 +1627,19 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                     <button
                       className="adm-btn adm-btn-secondary adm-btn-sm"
                       onClick={() => openEditModal(t)}
-                      title="Edit ticket"
+                      title={
+                        upload.status === "confirmed"
+                          ? "Cannot edit confirmed manifest"
+                          : "Edit ticket"
+                      }
+                      disabled={upload.status === "confirmed"}
+                      style={{
+                        opacity: upload.status === "confirmed" ? 0.5 : 1,
+                        cursor:
+                          upload.status === "confirmed"
+                            ? "not-allowed"
+                            : "pointer",
+                      }}
                     >
                       <Pencil size={13} />
                     </button>
@@ -1634,8 +1654,20 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                       <button
                         className="adm-btn adm-btn-secondary adm-btn-sm"
                         onClick={() => setSwitchingTicket(t)}
-                        title="Switch seat dengan penumpang lain"
-                        style={{ color: "#7c3aed" }}
+                        title={
+                          upload.status === "confirmed"
+                            ? "Cannot switch seats on confirmed manifest"
+                            : "Switch seat dengan penumpang lain"
+                        }
+                        disabled={upload.status === "confirmed"}
+                        style={{
+                          color: "#7c3aed",
+                          opacity: upload.status === "confirmed" ? 0.5 : 1,
+                          cursor:
+                            upload.status === "confirmed"
+                              ? "not-allowed"
+                              : "pointer",
+                        }}
                       >
                         <ArrowLeftRight size={13} />
                       </button>
@@ -1643,11 +1675,21 @@ function TicketsPanel({ tickets, upload, onRefresh }) {
                     <button
                       className="adm-btn adm-btn-sm"
                       onClick={() => handleDeleteTicket(t)}
-                      title="Hapus ticket secara permanen"
+                      title={
+                        upload.status === "confirmed"
+                          ? "Cannot delete ticket on confirmed manifest"
+                          : "Hapus ticket secara permanen"
+                      }
+                      disabled={upload.status === "confirmed"}
                       style={{
                         background: "#fee2e2",
                         color: "#dc2626",
                         border: "1px solid #fca5a5",
+                        opacity: upload.status === "confirmed" ? 0.5 : 1,
+                        cursor:
+                          upload.status === "confirmed"
+                            ? "not-allowed"
+                            : "pointer",
                       }}
                     >
                       <Trash2 size={13} />
@@ -2701,6 +2743,17 @@ function UploadList({ uploads, selectedId, onSelect, onDelete }) {
                   <button
                     className="adm-btn adm-btn-danger adm-btn-sm"
                     onClick={() => onDelete(u.id)}
+                    disabled={u.status === "confirmed"}
+                    title={
+                      u.status === "confirmed"
+                        ? "Cannot delete confirmed manifest"
+                        : "Delete manifest"
+                    }
+                    style={{
+                      opacity: u.status === "confirmed" ? 0.5 : 1,
+                      cursor:
+                        u.status === "confirmed" ? "not-allowed" : "pointer",
+                    }}
                   >
                     Del
                   </button>
