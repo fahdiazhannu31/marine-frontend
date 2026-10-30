@@ -101,31 +101,32 @@ const BOAT_LAYOUTS = {
 
   // ── MARINA SRIKANDI 2 (id will be set after INSERT) ─────────────────────
   // Layout BAWAH deck:
-  //   [D E]   [aisle] [A B]    — rows 1-2
-  //   [D E F] [aisle] [A B C]  — rows 3-14
+  //   [A B]   [aisle] [E F]    — rows 1-2 (4 seats each: 1A,1B,1E,1F / 2A,2B,2E,2F)
+  //   [A B C] [aisle] [D E F]  — rows 3-14
   //   [R. GENSET]     [TOILET] — row 15 (no seats)
+  // CORRECTED: A is LEFT window, F is RIGHT window (standard aircraft/boat convention)
   "marina-srikandi-2": {
     name: "MARINA SRIKANDI 2",
     shape: "pointed",
     captainArea: true,
     hasOuterSeats: false,
     rows: [
-      // Baris 1-2: D,E kiri | A,B kanan
-      { row: 1, left: ["D", "E"], right: ["A", "B"] },
-      { row: 2, left: ["D", "E"], right: ["A", "B"] },
-      // Baris 3-14: D,E,F kiri | A,B,C kanan
-      { row: 3, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 4, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 5, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 6, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 7, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 8, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 9, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 10, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 11, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 12, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 13, left: ["D", "E", "F"], right: ["A", "B", "C"] },
-      { row: 14, left: ["D", "E", "F"], right: ["A", "B", "C"] },
+      // Baris 1-2: A,B kiri (window) | E,F kanan (window)
+      { row: 1, left: ["A", "B"], right: ["E", "F"] },
+      { row: 2, left: ["A", "B"], right: ["E", "F"] },
+      // Baris 3-14: A,B,C kiri (window) | D,E,F kanan (window)
+      { row: 3, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 4, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 5, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 6, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 7, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 8, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 9, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 10, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 11, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 12, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 13, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      { row: 14, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       // Baris 15: R. GENSET + TOILET (no seats)
       {
         row: 15,
