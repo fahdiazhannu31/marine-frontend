@@ -326,7 +326,20 @@ export default function DailyOps() {
                     </div>
                     <div>
                       <strong>👨‍✈️ ABK:</strong>{" "}
-                      {m.abk_names ? JSON.parse(m.abk_names).join(", ") : "—"}
+                      {(() => {
+                        try {
+                          if (!m.abk_names) return "—";
+                          const parsed =
+                            typeof m.abk_names === "string"
+                              ? JSON.parse(m.abk_names)
+                              : m.abk_names;
+                          return Array.isArray(parsed)
+                            ? parsed.join(", ")
+                            : m.abk_names;
+                        } catch (e) {
+                          return m.abk_names || "—";
+                        }
+                      })()}
                     </div>
                     <div>
                       <strong>🎯 GRO:</strong> {m.gro_name || "—"}
