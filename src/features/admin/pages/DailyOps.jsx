@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import {
   fetchManualVerifications,
   approveManualPayment,
@@ -19,6 +19,16 @@ function formatDateTime(value) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+  });
+}
+
+function fmtDate(v) {
+  if (!v) return "-";
+  const date = new Date(v.replace(" ", "T"));
+  return date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }
 
@@ -100,29 +110,350 @@ export default function DailyOps() {
     unassigned_seats = [],
     capacity_warnings = [],
     today_tomorrow = [],
-    manifest_uploads = [], // Add this if backend returns it
+    manifest_uploads = [],
   } = overview || {};
 
   return (
     <div className="adm-page">
       <div className="adm-page-header">
         <div>
-          <h1>Daily Operations</h1>
+          <h1>Daily Operations Dashboard</h1>
           <p>
-            Everything that needs a human decision today: pending payment
-            verifications, unassigned seats, and capacity heads-up.
+            Ringkasan operasional harian: jadwal trip, manifest, crew, dan
+            passenger breakdown untuk hari ini dan besok.
           </p>
         </div>
       </div>
 
-      {/* ── Today / Tomorrow schedules ───────────────────────── */}
+      {/* ── Manifest Uploads Today/Tomorrow (Primary Info) ────── */}
       <section className="adm-section">
         <div className="adm-section-heading">
-          <h2>Today &amp; Tomorrow</h2>
+          <h2>📋 Manifest Overview — Today &amp; Tomorrow</h2>
+          {manifest_uploads && manifest_uploads.length > 0 && (
+            <span className="adm-count-pill">{manifest_uploads.length}</span>
+          )}
         </div>
-        {today_tomorrow.length === 0 ? (
-          <p className="adm-empty">No schedules today or tomorrow.</p>
+
+        {!manifest_uploads || manifest_uploads.length === 0 ? (
+          <p className="adm-empty">
+            Belum ada manifest untuk hari ini atau besok.
+          </p>
         ) : (
+          <div style={{ display: "grid", gap: 20 }}>
+            {manifest_uploads.map((m) => {
+              const isToday = m.is_today;
+              const isConfirmed = m.status === "confirmed";
+              const totalPax = m.total_pax || 0;
+              const checkedInPax = m.checked_in_count || 0;
+              const checkInPercent =
+                totalPax > 0 ? Math.round((checkedInPax / totalPax) * 100) : 0;
+
+              return (
+                <div
+                  key={m.id}
+                  style={{
+                    border: "2px solid var(--adm-border)",
+                    borderRadius: 12,
+                    padding: 20,
+                    background: isToday
+                      ? "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
+                      : "white",
+                  }}
+                >
+                  {/* Header Row */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: 16,
+                    }}
+                  >
+                    <div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "center",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <span
+                          className={`adm-badge ${isToday ? "adm-badge-info" : "adm-badge-neutral"}`}
+                          style={{ fontSize: 12 }}
+                        >
+                          {isToday ? "TODAY" : "TOMORROW"}
+                        </span>
+                        <span
+                          className={`adm-badge ${
+                            m.direction === "DEPARTURE"
+                              ? "adm-badge-success"
+                              : "adm-badge-warning"
+                          }`}
+                        >
+                          {m.direction === "DEPARTURE"
+                            ? "🛫 DEPARTURE"
+                            : "🛬 RETURN"}
+                        </span>
+                        <span
+                          className={`adm-badge ${
+                            isConfirmed
+                              ? "adm-badge-success"
+                              : "adm-badge-neutral"
+                          }`}
+                        >
+                          {isConfirmed ? "✓ Confirmed" : "Draft"}
+                        </span>
+                      </div>
+                      <h3
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 700,
+                          margin: 0,
+                          marginBottom: 4,
+                        }}
+                      >
+                        🚢 {m.boat_name || "N/A"}
+                      </h3>
+                      <div
+                        style={{ fontSize: 14, color: "var(--adm-text-muted)" }}
+                      >
+                        📅 {fmtDate(m.trip_date)} • {m.origin || "?"} →{" "}
+                        {m.destination || "?"}
+                      </div>
+                    </div>
+
+                    {/* Status & Actions */}
+                    <div style={{ textAlign: "right" }}>
+                      <div
+                        style={{
+                          fontSize: 28,
+                          fontWeight: 700,
+                          marginBottom: 4,
+                        }}
+                      >
+                        {totalPax}
+                      </div>
+                      <div
+                        style={{ fontSize: 12, color: "var(--adm-text-muted)" }}
+                      >
+                        Total PAX
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Passenger Breakdown */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(120px, 1fr))",
+                      gap: 12,
+                      marginBottom: 16,
+                      padding: 16,
+                      background: "rgba(255,255,255,0.7)",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                        🌙 {m.overnight_count || 0}
+                      </div>
+                      <div
+                        style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
+                      >
+                        Overnight
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                        ☀️ {m.daytrip_count || 0}
+                      </div>
+                      <div
+                        style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
+                      >
+                        Day Trip
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                        👔 {m.staff_count || 0}
+                      </div>
+                      <div
+                        style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
+                      >
+                        Staff
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                        🎁 {m.foc_count || 0}
+                      </div>
+                      <div
+                        style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
+                      >
+                        FOC
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                        🏪 {m.vendor_count || 0}
+                      </div>
+                      <div
+                        style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
+                      >
+                        Vendor
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Crew Info */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(150px, 1fr))",
+                      gap: 10,
+                      marginBottom: 16,
+                      padding: 12,
+                      background: "rgba(255,255,255,0.5)",
+                      borderRadius: 8,
+                      fontSize: 13,
+                    }}
+                  >
+                    <div>
+                      <strong>⚓ Captain:</strong> {m.captain_name || "—"}
+                    </div>
+                    <div>
+                      <strong>👨‍✈️ ABK:</strong>{" "}
+                      {m.abk_names ? JSON.parse(m.abk_names).join(", ") : "—"}
+                    </div>
+                    <div>
+                      <strong>🎯 GRO:</strong> {m.gro_name || "—"}
+                    </div>
+                    <div>
+                      <strong>🏥 KKM:</strong> {m.kkm_name || "—"}
+                    </div>
+                    <div>
+                      <strong>🛡️ Guard:</strong> {m.guard_name || "—"}
+                    </div>
+                  </div>
+
+                  {/* Check-in Progress */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>
+                        Check-in Progress
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 700 }}>
+                        {checkedInPax}/{totalPax} ({checkInPercent}%)
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 24,
+                        background: "#e0e0e0",
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${checkInPercent}%`,
+                          height: "100%",
+                          background:
+                            checkInPercent === 100
+                              ? "linear-gradient(90deg, #4caf50 0%, #66bb6a 100%)"
+                              : "linear-gradient(90deg, #2196f3 0%, #42a5f5 100%)",
+                          transition: "width 0.3s ease",
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: checkInPercent > 50 ? "white" : "#333",
+                        }}
+                      >
+                        {checkInPercent}% Checked In
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <Link
+                      to={`/admin/manifest-upload?uploadId=${m.id}`}
+                      className="adm-btn adm-btn-sm adm-btn-secondary"
+                    >
+                      📝 View Details
+                    </Link>
+
+                    {isConfirmed && (
+                      <>
+                        <a
+                          href={`${API_URL}/api/admin/manifest/export-excel/${m.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="adm-btn adm-btn-sm adm-btn-success"
+                        >
+                          📥 Download Excel
+                        </a>
+                        <Link
+                          to={`/admin/check-in?upload_id=${m.id}`}
+                          className="adm-btn adm-btn-sm adm-btn-info"
+                        >
+                          📱 Check-in
+                        </Link>
+                      </>
+                    )}
+
+                    {m.notes && (
+                      <div
+                        style={{
+                          flex: "1 1 100%",
+                          padding: 8,
+                          background: "#fff3cd",
+                          border: "1px solid #ffc107",
+                          borderRadius: 6,
+                          fontSize: 12,
+                          marginTop: 4,
+                        }}
+                      >
+                        <strong>📌 Notes:</strong> {m.notes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ── Schedule Overview (for schedules without manifest) ── */}
+      {today_tomorrow && today_tomorrow.length > 0 && (
+        <section className="adm-section">
+          <div className="adm-section-heading">
+            <h2>📅 All Schedules Today &amp; Tomorrow</h2>
+            <span className="adm-count-pill">{today_tomorrow.length}</span>
+          </div>
           <div className="adm-stat-grid">
             {today_tomorrow.map((s) => {
               const hasManifest = (s.manifest_pax ?? 0) > 0;
@@ -253,8 +584,8 @@ export default function DailyOps() {
               );
             })}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ── Manual verification queue ────────────────────────── */}
       <section className="adm-section">
