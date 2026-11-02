@@ -1,15 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
-import {
-  fetchManualVerifications,
-  approveManualPayment,
-  rejectManualPayment,
-  fetchOpsOverview,
-} from "../services/opsService.js";
-import { formatRupiah } from "../../packages/formatRupiah.js";
+import { fetchOpsOverview } from "../services/opsService.js";
 import { API_URL } from "../../../config/BaseUrl.js";
 import { useToast } from "../ui/ToastContext.jsx";
-import { useConfirm } from "../ui/ConfirmContext.jsx";
 
 function formatDateTime(value) {
   if (!value) return "-";
@@ -34,21 +27,14 @@ function fmtDate(v) {
 
 export default function DailyOps() {
   const toast = useToast();
-  const confirm = useConfirm();
 
-  const [verifications, setVerifications] = useState([]);
   const [overview, setOverview] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [errorMsg, setErrorMsg] = useState("");
-  const [actioningId, setActioningId] = useState(null);
 
   const loadAll = useCallback(async () => {
     try {
-      const [verifs, ops] = await Promise.all([
-        fetchManualVerifications(),
-        fetchOpsOverview(),
-      ]);
-      setVerifications(verifs);
+      const ops = await fetchOpsOverview();
       setOverview(ops);
       setStatus("ready");
     } catch (err) {
@@ -62,42 +48,6 @@ export default function DailyOps() {
     loadAll();
   }, [loadAll]);
 
-  const handleApprove = async (id) => {
-    setActioningId(id);
-    try {
-      await approveManualPayment(id);
-      toast.success("Booking approved and marked as settled.");
-      await loadAll();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Failed to approve booking");
-    } finally {
-      setActioningId(null);
-    }
-  };
-
-  const handleReject = async (id) => {
-    const ok = await confirm({
-      title: "Reject this booking?",
-      message: "Its reserved slots will be released back to the schedule.",
-      confirmLabel: "Reject",
-      danger: true,
-    });
-    if (!ok) return;
-
-    setActioningId(id);
-    try {
-      await rejectManualPayment(id);
-      toast.success("Booking rejected, slots released.");
-      await loadAll();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Failed to reject booking");
-    } finally {
-      setActioningId(null);
-    }
-  };
-
   if (status === "loading") {
     return <div className="adm-loading">Loading daily ops...</div>;
   }
@@ -107,7 +57,6 @@ export default function DailyOps() {
   }
 
   const {
-    unassigned_seats = [],
     capacity_warnings = [],
     today_tomorrow = [],
     manifest_uploads = [],
@@ -599,141 +548,6 @@ export default function DailyOps() {
           </div>
         </section>
       )}
-
-      {/* ── Manual verification queue ────────────────────────── */}
-      <section className="adm-section">
-        <div className="adm-section-heading">
-          <h2>Manual Payment Verification</h2>
-          {verifications.length > 0 && (
-            <span className="adm-count-pill">{verifications.length}</span>
-          )}
-        </div>
-
-        {verifications.length === 0 ? (
-          <p className="adm-empty">Nothing awaiting verification right now.</p>
-        ) : (
-          <div className="adm-table-wrap">
-            <table className="adm-table">
-              <thead>
-                <tr>
-                  <th>Submitted</th>
-                  <th>Group</th>
-                  <th>Package</th>
-                  <th>Departure</th>
-                  <th>Pax</th>
-                  <th>Amount</th>
-                  <th>Slip</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {verifications.map((v) => (
-                  <tr key={v.id}>
-                    <td>{formatDateTime(v.created_at)}</td>
-                    <td>
-                      <div className="adm-cell-primary">{v.group_name}</div>
-                      <div className="adm-cell-muted">{v.email}</div>
-                    </td>
-                    <td>{v.package_name}</td>
-                    <td>
-                      {v.boat_departure_name || "N/A"}
-                      <div className="adm-cell-muted">
-                        {formatDateTime(v.date_departure)}
-                      </div>
-                    </td>
-                    <td>{v.jml_pax}</td>
-                    <td>{formatRupiah(v.amount)}</td>
-                    <td>
-                      {v.transfer_slip ? (
-                        <a
-                          href={`${API_URL}/assets_users/images/${v.transfer_slip}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        <span className="adm-cell-muted">-</span>
-                      )}
-                    </td>
-                    <td>
-                      <div className="adm-row-actions">
-                        <button
-                          className="adm-btn adm-btn-success adm-btn-sm"
-                          disabled={actioningId === v.id}
-                          onClick={() => handleApprove(v.id)}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="adm-btn adm-btn-danger adm-btn-sm"
-                          disabled={actioningId === v.id}
-                          onClick={() => handleReject(v.id)}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {/* ── Unassigned seats ──────────────────────────────────── */}
-      <section className="adm-section">
-        <div className="adm-section-heading">
-          <h2>Bookings Missing Seat Assignment</h2>
-          {unassigned_seats.length > 0 && (
-            <span className="adm-count-pill">{unassigned_seats.length}</span>
-          )}
-        </div>
-
-        {unassigned_seats.length === 0 ? (
-          <p className="adm-empty">
-            Every settled booking has its seats assigned.
-          </p>
-        ) : (
-          <div className="adm-table-wrap">
-            <table className="adm-table">
-              <thead>
-                <tr>
-                  <th>Group</th>
-                  <th>Departure</th>
-                  <th>Seats Assigned</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {unassigned_seats.map((b) => (
-                  <tr key={b.id}>
-                    <td>{b.group_name}</td>
-                    <td>
-                      {b.boat_departure_name || "N/A"}
-                      <div className="adm-cell-muted">
-                        {formatDateTime(b.date_departure)}
-                      </div>
-                    </td>
-                    <td>
-                      {b.seats_assigned}/{b.jml_pax}
-                    </td>
-                    <td>
-                      <Link
-                        className="adm-btn adm-btn-secondary adm-btn-sm"
-                        to={`/admin/yacht-seat-booking?booking_id=${b.id}`}
-                      >
-                        Assign Seats
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
 
       {/* ── Capacity warnings ─────────────────────────────────── */}
       <section className="adm-section">
