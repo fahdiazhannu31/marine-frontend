@@ -3,6 +3,29 @@ import { Link } from "react-router";
 import { fetchOpsOverview } from "../services/opsService.js";
 import { API_URL } from "../../../config/BaseUrl.js";
 import { useToast } from "../ui/ToastContext.jsx";
+import {
+  Ship,
+  Calendar,
+  Users,
+  Moon,
+  Sun,
+  Briefcase,
+  Gift,
+  Store,
+  Anchor,
+  UserCheck,
+  Target,
+  Heart,
+  Shield,
+  Eye,
+  Download,
+  Smartphone,
+  ClipboardList,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 
 function formatDateTime(value) {
   if (!value) return "-";
@@ -77,7 +100,10 @@ export default function DailyOps() {
       {/* ── Manifest Uploads Today/Tomorrow (Primary Info) ────── */}
       <section className="adm-section">
         <div className="adm-section-heading">
-          <h2>Manifest Overview — Today &amp; Tomorrow</h2>
+          <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ClipboardList size={24} />
+            Manifest Overview — Today &amp; Tomorrow
+          </h2>
           {manifest_uploads && manifest_uploads.length > 0 && (
             <span className="adm-count-pill">{manifest_uploads.length}</span>
           )}
@@ -203,7 +229,17 @@ export default function DailyOps() {
                     }}
                   >
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                      <div
+                        style={{
+                          fontSize: 24,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Moon size={20} />
                         {m.overnight_count || 0}
                       </div>
                       <div
@@ -213,7 +249,17 @@ export default function DailyOps() {
                       </div>
                     </div>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                      <div
+                        style={{
+                          fontSize: 24,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Sun size={20} />
                         {m.daytrip_count || 0}
                       </div>
                       <div
@@ -223,7 +269,17 @@ export default function DailyOps() {
                       </div>
                     </div>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                      <div
+                        style={{
+                          fontSize: 24,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Briefcase size={20} />
                         {m.staff_count || 0}
                       </div>
                       <div
@@ -233,7 +289,17 @@ export default function DailyOps() {
                       </div>
                     </div>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                      <div
+                        style={{
+                          fontSize: 24,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Gift size={20} />
                         {m.foc_count || 0}
                       </div>
                       <div
@@ -243,7 +309,17 @@ export default function DailyOps() {
                       </div>
                     </div>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 24, fontWeight: 700 }}>
+                      <div
+                        style={{
+                          fontSize: 24,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Store size={20} />
                         {m.vendor_count || 0}
                       </div>
                       <div
@@ -411,7 +487,10 @@ export default function DailyOps() {
       {today_tomorrow && today_tomorrow.length > 0 && (
         <section className="adm-section">
           <div className="adm-section-heading">
-            <h2>All Schedules Today &amp; Tomorrow</h2>
+            <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Calendar size={24} />
+              All Schedules Today &amp; Tomorrow
+            </h2>
             <span className="adm-count-pill">{today_tomorrow.length}</span>
           </div>
           <div className="adm-stat-grid">
@@ -549,7 +628,10 @@ export default function DailyOps() {
       {/* ── Capacity warnings ─────────────────────────────────── */}
       <section className="adm-section">
         <div className="adm-section-heading">
-          <h2>Capacity Warnings (next 14 days, ≥80% full)</h2>
+          <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <AlertCircle size={24} />
+            Capacity Warnings (next 14 days, ≥80% full)
+          </h2>
           {capacity_warnings.length > 0 && (
             <span className="adm-count-pill adm-count-pill-warning">
               {capacity_warnings.length}
