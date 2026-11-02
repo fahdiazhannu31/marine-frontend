@@ -77,7 +77,7 @@ export default function DailyOps() {
       {/* ── Manifest Uploads Today/Tomorrow (Primary Info) ────── */}
       <section className="adm-section">
         <div className="adm-section-heading">
-          <h2>📋 Manifest Overview — Today &amp; Tomorrow</h2>
+          <h2>Manifest Overview — Today &amp; Tomorrow</h2>
           {manifest_uploads && manifest_uploads.length > 0 && (
             <span className="adm-count-pill">{manifest_uploads.length}</span>
           )}
@@ -140,9 +140,7 @@ export default function DailyOps() {
                               : "adm-badge-warning"
                           }`}
                         >
-                          {m.direction === "DEPARTURE"
-                            ? "🛫 DEPARTURE"
-                            : "🛬 RETURN"}
+                          {m.direction === "DEPARTURE" ? "DEPARTURE" : "RETURN"}
                         </span>
                         <span
                           className={`adm-badge ${
@@ -206,7 +204,7 @@ export default function DailyOps() {
                   >
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 24, fontWeight: 700 }}>
-                        🌙 {m.overnight_count || 0}
+                        {m.overnight_count || 0}
                       </div>
                       <div
                         style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
@@ -216,7 +214,7 @@ export default function DailyOps() {
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 24, fontWeight: 700 }}>
-                        ☀️ {m.daytrip_count || 0}
+                        {m.daytrip_count || 0}
                       </div>
                       <div
                         style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
@@ -226,7 +224,7 @@ export default function DailyOps() {
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 24, fontWeight: 700 }}>
-                        👔 {m.staff_count || 0}
+                        {m.staff_count || 0}
                       </div>
                       <div
                         style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
@@ -236,7 +234,7 @@ export default function DailyOps() {
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 24, fontWeight: 700 }}>
-                        🎁 {m.foc_count || 0}
+                        {m.foc_count || 0}
                       </div>
                       <div
                         style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
@@ -246,7 +244,7 @@ export default function DailyOps() {
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 24, fontWeight: 700 }}>
-                        🏪 {m.vendor_count || 0}
+                        {m.vendor_count || 0}
                       </div>
                       <div
                         style={{ fontSize: 11, color: "var(--adm-text-muted)" }}
@@ -413,7 +411,7 @@ export default function DailyOps() {
       {today_tomorrow && today_tomorrow.length > 0 && (
         <section className="adm-section">
           <div className="adm-section-heading">
-            <h2>📅 All Schedules Today &amp; Tomorrow</h2>
+            <h2>All Schedules Today &amp; Tomorrow</h2>
             <span className="adm-count-pill">{today_tomorrow.length}</span>
           </div>
           <div className="adm-stat-grid">
@@ -488,7 +486,7 @@ export default function DailyOps() {
                           justifyContent: "space-between",
                         }}
                       >
-                        <span>🌐 Online booking</span>
+                        <span>Online booking</span>
                         <span>
                           <strong>{s.booked_pax}</strong> pax,{" "}
                           <strong>{s.checked_in_pax}</strong> check-in
@@ -500,7 +498,7 @@ export default function DailyOps() {
                           justifyContent: "space-between",
                         }}
                       >
-                        <span>📋 Manifest upload</span>
+                        <span>Manifest upload</span>
                         <span>
                           <strong>{s.manifest_pax}</strong> pax,{" "}
                           <strong>{s.manifest_checked_in}</strong> check-in
@@ -510,13 +508,12 @@ export default function DailyOps() {
                         <div style={{ display: "flex", gap: 12, marginTop: 2 }}>
                           {s.manifest_overnight > 0 && (
                             <span>
-                              🌙 Overnight:{" "}
-                              <strong>{s.manifest_overnight}</strong>
+                              Overnight: <strong>{s.manifest_overnight}</strong>
                             </span>
                           )}
                           {s.manifest_daytrip > 0 && (
                             <span>
-                              ☀️ Day trip: <strong>{s.manifest_daytrip}</strong>
+                              Day trip: <strong>{s.manifest_daytrip}</strong>
                             </span>
                           )}
                         </div>
@@ -536,7 +533,7 @@ export default function DailyOps() {
                               fontSize: 11,
                             }}
                           >
-                            📥 Download Manifest Final (Excel)
+                            Download Manifest Final (Excel)
                           </a>
                         </div>
                       )}
