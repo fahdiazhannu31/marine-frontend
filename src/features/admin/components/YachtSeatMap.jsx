@@ -81,20 +81,20 @@ const BOAT_LAYOUTS = {
     shape: "rounded", // rounded bow
     captainArea: true,
     rows: [
-      { row: 1, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 2, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 3, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 4, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 5, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      // Row 6: AB left | EF right (no CD)
+      // Rows 1-8: AB left | EF right (2+2 seats, aisle di tengah)
+      { row: 1, left: ["A", "B"], right: ["E", "F"] },
+      { row: 2, left: ["A", "B"], right: ["E", "F"] },
+      { row: 3, left: ["A", "B"], right: ["E", "F"] },
+      { row: 4, left: ["A", "B"], right: ["E", "F"] },
+      { row: 5, left: ["A", "B"], right: ["E", "F"] },
       { row: 6, left: ["A", "B"], right: ["E", "F"] },
-      { row: 7, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      { row: 8, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      // Row 9: left empty (storage/toilet) | DEF right side only
+      { row: 7, left: ["A", "B"], right: ["E", "F"] },
+      { row: 8, left: ["A", "B"], right: ["E", "F"] },
+      // Row 9: left empty (toilet) | EF right side only (2 seats)
       {
         row: 9,
-        left: [{ type: "special", label: "Storage" }],
-        right: ["D", "E", "F"],
+        left: [{ type: "special", label: "TOILET" }],
+        right: ["E", "F"],
       },
     ],
   },
