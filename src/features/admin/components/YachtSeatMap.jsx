@@ -81,20 +81,21 @@ const BOAT_LAYOUTS = {
     shape: "rounded", // rounded bow
     captainArea: true,
     rows: [
-      // Rows 1-8: AB left | EF right (2+2 seats, aisle di tengah)
-      { row: 1, left: ["A", "B"], right: ["E", "F"] },
-      { row: 2, left: ["A", "B"], right: ["E", "F"] },
-      { row: 3, left: ["A", "B"], right: ["E", "F"] },
-      { row: 4, left: ["A", "B"], right: ["E", "F"] },
-      { row: 5, left: ["A", "B"], right: ["E", "F"] },
-      { row: 6, left: ["A", "B"], right: ["E", "F"] },
-      { row: 7, left: ["A", "B"], right: ["E", "F"] },
-      { row: 8, left: ["A", "B"], right: ["E", "F"] },
-      // Row 9: left empty (toilet) | EF right side only (2 seats)
+      // Rows 1-8: DC left | BA right (2+2 seats, aisle di tengah)
+      // Dari kiri ke kanan: D C [aisle] B A
+      { row: 1, left: ["D", "C"], right: ["B", "A"] },
+      { row: 2, left: ["D", "C"], right: ["B", "A"] },
+      { row: 3, left: ["D", "C"], right: ["B", "A"] },
+      { row: 4, left: ["D", "C"], right: ["B", "A"] },
+      { row: 5, left: ["D", "C"], right: ["B", "A"] },
+      { row: 6, left: ["D", "C"], right: ["B", "A"] },
+      { row: 7, left: ["D", "C"], right: ["B", "A"] },
+      { row: 8, left: ["D", "C"], right: ["B", "A"] },
+      // Row 9: left empty (toilet) | BA right side only (2 seats)
       {
         row: 9,
         left: [{ type: "special", label: "TOILET" }],
-        right: ["E", "F"],
+        right: ["B", "A"],
       },
     ],
   },
