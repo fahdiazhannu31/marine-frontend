@@ -139,11 +139,12 @@ const BOAT_LAYOUTS = {
 
   // ── MOLA-MOLA / MARINA SRIKANDI (id 14) ──────────────────────────────────
   // BAWAH deck: rows 1-14
-  // - Row 1: ABC (left) | gap (center) | DEF (right) - 6 seats total
-  // - Rows 2-13: ABCDE (left) | FGHIJ (right) - 10 seats per row
-  // - Row 14: ABC (left) | gap | DEF (right) - 6 seats
+  // Layout: (kiri) J,I,H,G,F | aisle | E,D,C,B,A (kanan)
+  // - Row 1: HGF (left) | gap (center) | CBA (right) - 6 seats total
+  // - Rows 2-13: JIHGF (left) | EDCBA (right) - 10 seats per row
+  // - Row 14: HGF (left) | gap | CBA (right) - 6 seats
   // ATAS deck: rows 15-22
-  // - All rows: ABC (left) | DEF (right) - 6 seats per row
+  // - All rows: HGF (left) | CBA (right) - 6 seats per row
   14: {
     name: "MOLA-MOLA / MARINA SRIKANDI",
     shape: "pointed",
@@ -152,72 +153,73 @@ const BOAT_LAYOUTS = {
     deckSplit: 15, // row >= 15 is ATAS deck
     rows: [
       // BAWAH DECK
-      // Row 1: ABC | _ _ | DEF (ada gap di tengah seperti gambar)
-      { row: 1, left: ["A", "B", "C"], right: [null, "D", "E", "F"] },
-      // Rows 2-13: ABCDE | FGHIJ (full 10 seats)
+      // Row 1: HGF | _ _ | CBA (ada gap di tengah seperti gambar)
+      { row: 1, left: ["H", "G", "F"], right: [null, "C", "B", "A"] },
+      // Rows 2-13: JIHGF | EDCBA (full 10 seats)
       {
         row: 2,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 3,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 4,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 5,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 6,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 7,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 8,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 9,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 10,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 11,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 12,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
       {
         row: 13,
-        left: ["A", "B", "C", "D", "E"],
-        right: ["F", "G", "H", "I", "J"],
+        left: ["J", "I", "H", "G", "F"],
+        right: ["E", "D", "C", "B", "A"],
       },
-      // Row 14: ABC | _ 14 _ | DEF (ada gap + row label di tengah)
-      { row: 14, left: ["A", "B", "C"], right: [null, "D", "E", "F"] },
+      // Row 14: HGF | _ 14 _ | CBA (ada gap + row label di tengah)
+      { row: 14, left: ["H", "G", "F"], right: [null, "C", "B", "A"] },
       // ATAS DECK (upper deck)
+      // Layout tetap ABC (left) | DEF (right)
       { row: 15, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 16, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 17, left: ["A", "B", "C"], right: ["D", "E", "F"] },
