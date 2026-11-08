@@ -5,7 +5,7 @@ import "./YachtSeatMap.css";
  *
  * Supported boats:
  *  - id 9  : LA BRISA      (116 seats, 4+4 per row, 15 rows, row 15 right-side only)
- *  - id 8  : LA VELA       (51 seats, row 1 & 5 = ABCDEF, row 6 = AB|EF gap)
+ *  - id 8  : LA VELA       (51 seats, rows 1-8 = ABCDEF full, row 9 = toilet|DEF)
  *  - id 10 : LA LUNA       (34 seats, DC|BA layout, row 9 = toilet|BA)
  *  - id 14 : MOLA-MOLA     (2 decks, JIHGF|EDCBA layout)
  *
@@ -57,18 +57,18 @@ const BOAT_LAYOUTS = {
     shape: "pointed",
     captainArea: true,
     rows: [
-      // Row 1: LENGKAP ABCDEF (6 seats) - tidak ada gap
+      // Row 1: LENGKAP ABCDEF (6 seats)
       { row: 1, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 2, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 3, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 4, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      // Row 5: LENGKAP ABCDEF (6 seats) - tidak ada gap
+      // Row 5: LENGKAP ABCDEF (6 seats)
       { row: 5, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      // Row 6: AB left | EF right (no CD - ada gap)
-      { row: 6, left: ["A", "B"], right: ["E", "F"] },
+      // Row 6: LENGKAP ABCDEF (6 seats) - no gap untuk reach 51 total
+      { row: 6, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 7, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 8, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      // Row 9: toilet left side, DEF right side
+      // Row 9: toilet left side, DEF right side (3 seats)
       {
         row: 9,
         left: [{ type: "special", label: "Toilet" }],
