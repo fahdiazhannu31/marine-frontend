@@ -5,9 +5,9 @@ import "./YachtSeatMap.css";
  *
  * Supported boats:
  *  - id 9  : LA BRISA      (116 seats, 4+4 per row, 15 rows, row 15 right-side only)
- *  - id 8  : LA VELA       (49 seats, row 6 = AB|EF no CD)
- *  - id 10 : LA LUNA       (49 seats, row 6 = AB|EF, row 9 = left empty|DEF)
- *  - id 14 : MOLA-MOLA     (2 decks, equipment labels)
+ *  - id 8  : LA VELA       (51 seats, row 1 & 5 = ABCDEF, row 6 = AB|EF gap)
+ *  - id 10 : LA LUNA       (34 seats, DC|BA layout, row 9 = toilet|BA)
+ *  - id 14 : MOLA-MOLA     (2 decks, JIHGF|EDCBA layout)
  *
  * Row numbers displayed OUTSIDE floor plan on the RIGHT side.
  * When boat_id matches a known layout the component renders that specific floor plan.
@@ -57,12 +57,14 @@ const BOAT_LAYOUTS = {
     shape: "pointed",
     captainArea: true,
     rows: [
-      { row: 1, left: ["A", "B"], right: ["C", "D"] },
+      // Row 1: LENGKAP ABCDEF (6 seats) - tidak ada gap
+      { row: 1, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 2, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 3, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 4, left: ["A", "B", "C"], right: ["D", "E", "F"] },
+      // Row 5: LENGKAP ABCDEF (6 seats) - tidak ada gap
       { row: 5, left: ["A", "B", "C"], right: ["D", "E", "F"] },
-      // Row 6: AB left | EF right (no CD)
+      // Row 6: AB left | EF right (no CD - ada gap)
       { row: 6, left: ["A", "B"], right: ["E", "F"] },
       { row: 7, left: ["A", "B", "C"], right: ["D", "E", "F"] },
       { row: 8, left: ["A", "B", "C"], right: ["D", "E", "F"] },
