@@ -443,14 +443,15 @@ export default function DailyOps() {
 
                     {isConfirmed && (
                       <>
-                        <a
+                        {/* Download Excel button hidden - 403 Forbidden issue */}
+                        {/* <a
                           href={`${API_URL}/api/admin/manifest/export-excel/${m.id}`}
                           target="_blank"
                           rel="noreferrer"
                           className="adm-btn adm-btn-sm adm-btn-success"
                         >
                           📥 Download Excel
-                        </a>
+                        </a> */}
                         <Link
                           to={`/admin/check-in?upload_id=${m.id}`}
                           className="adm-btn adm-btn-sm adm-btn-info"
@@ -598,8 +599,8 @@ export default function DailyOps() {
                         </div>
                       )}
 
-                      {/* Download manifest button (if confirmed) */}
-                      {manifestUpload && manifestUpload.confirmed && (
+                      {/* Download manifest button (if confirmed) - HIDDEN due to 403 Forbidden */}
+                      {/* {manifestUpload && manifestUpload.confirmed && (
                         <div style={{ marginTop: 8 }}>
                           <a
                             href={`${API_URL}/api/admin/manifest/export-excel/${manifestUpload.id}`}
@@ -615,7 +616,7 @@ export default function DailyOps() {
                             Download Manifest Final (Excel)
                           </a>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   )}
                 </div>
